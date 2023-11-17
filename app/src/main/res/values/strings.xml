@@ -1,8 +1,8 @@
 <resources>
-  <string name="app_name">Pet Buddy</string>
+  <string name="app_name">Time Jar</string>
 
   <string name="permission_rational_dialog_title">Activity Recognition Permission Needed</string>
-  <string name="permission_rational_dialog_message">To get information about your activity, you need to give Activity Recognition permission to Pet Buddy.</string>
+  <string name="permission_rational_dialog_message">To get information about your activity, you need to give Activity Recognition permission to Time Jar.</string>
   <string name="permission_rational_dialog_positive_button_text">Request a permission</string>
   <string name="permission_rational_dialog_negative_button_text">No thanks</string>
 
@@ -22,10 +22,7 @@
   <string name="activity_update_remove_success">Activity updates removed</string>
   <string name="activity_update_remove_failed">Removing activity updates failed</string>
 
-  <string name="start_tracking">Start</string>
-  <string name="stop_tracking">Stop</string>
-  <string name="reset_tracking">Reset</string>
-  <string name="time_to_start">It\'s time to start activity</string>
+  <string name="activity_recognition">Click START to begin tracking activity!</string>
 
   <string name="still">Still</string>
   <string name="walking">Walking</string>

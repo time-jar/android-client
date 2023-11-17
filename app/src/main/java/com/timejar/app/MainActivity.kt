@@ -1,146 +1,131 @@
 package com.timejar.app
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import android.widget.Button
-import com.timejar.app.databinding.ActivityMainBinding
 import android.content.Intent
-import android.icu.util.Calendar
-import android.location.LocationManager
-import com.google.android.gms.location.LocationRequest
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
-import java.util.Date
-
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.timejar.app.detectedactivity.DetectedActivityService
+import com.timejar.app.transitions.TRANSITIONS_RECEIVER_ACTION
+import com.timejar.app.transitions.TransitionsReceiver
+import com.timejar.app.transitions.removeActivityTransitionUpdates
+import com.timejar.app.transitions.requestActivityTransitionUpdates
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var startBtn: Button
+    private lateinit var stopBtn: Button
+    private lateinit var resetBtn: Button
+    private lateinit var activityImage: ImageView
+    private lateinit var activityTitle: TextView
 
-    @SuppressLint("MissingPermission")
+    private var isTrackingStarted = false
+        set(value) {
+            resetBtn.visibility = if(value) View.VISIBLE else View.GONE
+            field = value
+        }
+
+    private val transitionBroadcastReceiver: TransitionsReceiver = TransitionsReceiver().apply {
+        action = { setDetectedActivity(it) }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.hasExtra(SUPPORTED_ACTIVITY_KEY)) {
+            val supportedActivity = intent.getSerializableExtra(SUPPORTED_ACTIVITY_KEY) as? SupportedActivity
+            supportedActivity?.let {
+                setDetectedActivity(it)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
+
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        startBtn = findViewById(R.id.startBtn)
+        stopBtn = findViewById(R.id.stopBtn)
+        resetBtn = findViewById(R.id.resetBtn)
+        activityImage = findViewById(R.id.activityImage)
+        activityTitle = findViewById(R.id.activityTitle)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        val locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            when {
-                permissions.getOrDefault(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    false
-                ) || permissions.getOrDefault(
-                    Manifest.permission
-                        .ACCESS_COARSE_LOCATION, false
-                ) -> {
-                    Toast.makeText(
-                        this, "Location access granted", Toast
-                            .LENGTH_SHORT
-                    ).show()
-
-                    if (isLocationEnable()) {
-                        val result = fusedLocationClient.getCurrentLocation(
-                            Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                            CancellationTokenSource().token
-                        )
-                        result.addOnCompleteListener {
-                            val location =
-                                "Latitude " + it.result.latitude + "\n" + "Longitude : " +
-                                        it.result.longitude
-
-                            binding.textView.text = location
-                        }
-                    } else {
-                        Toast.makeText(this, "Please turn ON the location.", Toast.LENGTH_SHORT)
-                            .show()
-                        createLocationRequest()
-                    }
-                }
-
-                else -> {
-                    Toast.makeText(
-                        this, "No location access", Toast
-                            .LENGTH_SHORT
-                    ).show()
-                }
+        startBtn.setOnClickListener {
+            if (isPermissionGranted()) {
+                startService(Intent(this, DetectedActivityService::class.java))
+                requestActivityTransitionUpdates()
+                isTrackingStarted = true
+                Toast.makeText(this@MainActivity, "You've started activity tracking",
+                    Toast.LENGTH_SHORT).show()
+            } else {
+                requestPermission()
             }
         }
+        stopBtn.setOnClickListener {
+            stopService(Intent(this, DetectedActivityService::class.java))
+            removeActivityTransitionUpdates()
 
-        binding.locationButton.setOnClickListener {
-            locationPermissionRequest.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+            Toast.makeText(this, "You've stopped tracking your activity", Toast.LENGTH_SHORT).show()
         }
-
+        resetBtn.setOnClickListener {
+            resetTracking()
+        }
     }
 
-    private fun isLocationEnable(): Boolean {
-        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-
-        try {
-            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return false
+    private fun resetTracking() {
+        isTrackingStarted = false
+        setDetectedActivity(SupportedActivity.NOT_STARTED)
+        removeActivityTransitionUpdates()
+        stopService(Intent(this, DetectedActivityService::class.java))
     }
 
-    private fun createLocationRequest() {
-        val locationRequest = LocationRequest.Builder(
-            10000
-        ).setMinUpdateIntervalMillis(5000).build()
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(transitionBroadcastReceiver, IntentFilter(TRANSITIONS_RECEIVER_ACTION))
+    }
 
+    override fun onPause() {
+        unregisterReceiver(transitionBroadcastReceiver)
+        super.onPause()
+    }
 
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+    override fun onDestroy() {
+        removeActivityTransitionUpdates()
+        stopService(Intent(this, DetectedActivityService::class.java))
+        super.onDestroy()
+    }
 
-        val client = LocationServices.getSettingsClient(this)
-        val task = client.checkLocationSettings(builder.build())
+    private fun setDetectedActivity(supportedActivity: SupportedActivity) {
+        activityImage.setImageDrawable(ContextCompat.getDrawable(this, supportedActivity.activityImage))
+        activityTitle.text = getString(supportedActivity.activityText)
+    }
 
-        task.addOnSuccessListener {
-
-        }
-
-        task.addOnFailureListener { e ->
-            if (e is ResolvableApiException) {
-                try {
-                    e.startResolutionForResult(
-                        this,
-                        100
-                    )
-                } catch (sendEx: java.lang.Exception) {
-
-                }
-            }
-
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
+                                            grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.ACTIVITY_RECOGNITION).not() &&
+            grantResults.size == 1 &&
+            grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            showSettingsDialog(this)
+        } else if (requestCode == PERMISSION_REQUEST_ACTIVITY_RECOGNITION &&
+            permissions.contains(Manifest.permission.ACTIVITY_RECOGNITION) &&
+            grantResults.size == 1 &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.d("permission_result", "permission granted")
+            startService(Intent(this, DetectedActivityService::class.java))
+            requestActivityTransitionUpdates()
+            isTrackingStarted = true
         }
     }
 }
