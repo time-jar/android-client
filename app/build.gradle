@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-  compileSdk 30
+  compileSdk targetSdkVersion
 
   defaultConfig {
     applicationId "com.timejar.app"
@@ -12,17 +12,20 @@ android {
     versionName "1.0"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-    // Load secrets.properties file
+    // Load secrets.properties and add fields to BuildConfig
+    def secretsProperties = new Properties()
     def secretsPropertiesFile = rootProject.file("secrets.properties")
-    if (secretsPropertiesFile.exists()) {
-      def secretsProperties = new Properties()
-      secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+    secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+    buildConfigField('String', 'SUPABASE_URL', "\"${secretsProperties['SUPABASE_URL']}\"")
+    buildConfigField 'String', 'SUPABASE_KEY', "\"${secretsProperties['SUPABASE_KEY']}\""
+  }
 
-      // Access properties and add them as build config fields
-      secretsProperties.each { key, value ->
-        buildConfigField "String", key.toString(), "\"${value}\""
-      }
-    }
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+  kotlinOptions {
+    jvmTarget = '17'
   }
 
   buildTypes {
@@ -46,16 +49,16 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
   // Support Libraries
-  implementation 'androidx.appcompat:appcompat:1.3.0'
-  implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+  implementation 'androidx.appcompat:appcompat:1.6.1'
+  implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
   // Testing Dependencies
-  testImplementation 'junit:junit:4.13.1'
-  androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-  androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+  testImplementation 'junit:junit:4.13.2'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
   // TUTORIAL DEPENDENCIES HERE
-  implementation 'com.google.android.gms:play-services-location:18.0.0'
+  implementation 'com.google.android.gms:play-services-location:21.0.1'
 
   // Supabase
   implementation platform("io.github.jan-tennert.supabase:bom:1.4.7")
