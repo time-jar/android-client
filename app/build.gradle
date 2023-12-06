@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
   compileSdk 30
@@ -44,5 +43,16 @@ dependencies {
 
   // TUTORIAL DEPENDENCIES HERE
   implementation 'com.google.android.gms:play-services-location:18.0.0'
+
+  // Supabase
+  implementation platform("io.github.jan-tennert.supabase:bom:1.4.7")
+  implementation 'io.github.jan-tennert.supabase:gotrue-kt'
+  implementation 'io.github.jan-tennert.supabase:realtime-kt'
+  implementation 'io.github.jan-tennert.supabase:functions-kt'
+  implementation 'io.github.jan-tennert.supabase:postgrest-kt'
+  implementation 'io.github.jan-tennert.supabase:compose-auth'
+  implementation 'io.github.jan-tennert.supabase:compose-auth-ui'
+
+  implementation 'io.ktor:ktor-client-android:2.3.6'
 
 }

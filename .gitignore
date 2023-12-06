@@ -43,3 +43,7 @@ _sandbox
 
 # Android Studio captures folder
 captures/
+
+
+# Encrypted variables/secrets
+gradle.properties
