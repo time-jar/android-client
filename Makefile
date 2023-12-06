@@ -1,3 +1,3 @@
 
 decrypt:
-	sops -d .enc.gradle.properties > gradle.properties
+	sops -d .enc.secrets.properties > secrets.properties

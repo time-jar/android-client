@@ -11,6 +11,18 @@ android {
     versionCode 1
     versionName "1.0"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    // Load secrets.properties file
+    def secretsPropertiesFile = rootProject.file("secrets.properties")
+    if (secretsPropertiesFile.exists()) {
+      def secretsProperties = new Properties()
+      secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+
+      // Access properties and add them as build config fields
+      secretsProperties.each { key, value ->
+        buildConfigField "String", key.toString(), "\"${value}\""
+      }
+    }
   }
 
   buildTypes {
@@ -22,6 +34,7 @@ android {
 
   buildFeatures {
     viewBinding true
+    buildConfig true
   }
     namespace 'com.timejar.app'
 }

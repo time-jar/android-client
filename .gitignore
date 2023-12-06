@@ -46,4 +46,4 @@ captures/
 
 
 # Encrypted variables/secrets
-gradle.properties
+secrets.properties
