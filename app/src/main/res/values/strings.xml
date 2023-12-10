@@ -43,13 +43,27 @@
   <string name="enter">Enter</string>
   <string name="do_not_have_account">You don\'t have an account ?</string>
   <string name="sign_up">Sign up</string>
+
+  // Sign up screen
   <string name="create_an_account">Create an account</string>
   <string name="name_label">Name</string>
   <string name="hint_enter_name">Enter your name</string>
+  <string name="surname_label">Surname</string>
+  <string name="hint_enter_surname">Enter your surname</string>
   <string name="confirm_password_label">Confirm password</string>
   <string name="hint_confirm_password">Confirm your password</string>
   <string name="already_have_account">Already have an account ?</string>
+  <string name="confirm">Confirm</string>
   <string name="sign_in">Sign in</string>
 
+  // Profile screen
+  <string name="profile_label">Profile</string>
+  <string name="complete_your_profile">Complete your profile</string>
+  <string name="work_location_label">Work location</string>
+  <string name="hint_enter_work_location">Select your work location</string>
+  <string name="home_location_label">Home location</string>
+  <string name="hint_enter_home_location">Select your home location</string>
+  <string name="school_location_label">School location</string>
+  <string name="hint_enter_school_location">Select your school location</string>
 
 </resources>

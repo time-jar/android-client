@@ -93,6 +93,3 @@ dependencies {
 
     // UI Tests
     androidTestImplementation('androidx.compose.ui:ui-test-junit4:1.6.0-beta02')
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-
-}

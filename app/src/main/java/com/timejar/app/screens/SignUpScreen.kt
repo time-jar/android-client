@@ -14,7 +14,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,22 +22,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.timejar.app.R
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen() {
     var name by remember { mutableStateOf(TextFieldValue("")) }
+    var surname by remember { mutableStateOf(TextFieldValue("")) }
+
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var confirmPassword by remember { mutableStateOf(TextFieldValue("")) }
-    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     val onSignUpButtonClicked: (String, String) -> Unit = {email, password ->
         Log.i("LoginScreen", "Email: $email, Password: $password")
@@ -74,9 +73,6 @@ fun SignUpScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             Text(
                 text = stringResource(id = R.string.create_an_account),
                 fontWeight = FontWeight.Normal,
@@ -85,7 +81,7 @@ fun SignUpScreen() {
                 color = Color(0xFF393F45)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             OutlinedTextField(
                 value = name,
@@ -112,14 +108,41 @@ fun SignUpScreen() {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
+
+            OutlinedTextField(
+                value = surname,
+                onValueChange = { surname = it },
+                label = {
+                    Text(
+                        text = stringResource(id = R.string.surname_label),
+                        color = Color(0xFFABB3BB)
+                    )
+                },
+                placeholder = { Text(text = stringResource(id = R.string.hint_enter_surname)) },
+                shape = RoundedCornerShape(8.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color(0xFF91B3B4),
+                    unfocusedBorderColor = Color(0xFFABB3BB)
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Person Icon",
+                        tint = Color(0xFF91B3B4)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = {
                     Text(
-                        text = stringResource(id = R.string.hint_enter_email),
+                        text = stringResource(id = R.string.label_email_address),
                         color = Color(0xFFABB3BB)
                     )
                 },
@@ -139,7 +162,7 @@ fun SignUpScreen() {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             OutlinedTextField(
                 value = password,
@@ -163,11 +186,9 @@ fun SignUpScreen() {
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = if (passwordVisible) VisualTransformation.None
-                else PasswordVisualTransformation()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             OutlinedTextField(
                 value = confirmPassword,
@@ -192,8 +213,6 @@ fun SignUpScreen() {
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = if (passwordVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -207,7 +226,7 @@ fun SignUpScreen() {
                     .height(48.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.sign_up),
+                    text = stringResource(id = R.string.confirm),
                     style = TextStyle(
                         color = Color.White,
                         fontSize = 20.sp,
