@@ -7,8 +7,7 @@
   <string name="permission_rational_dialog_negative_button_text">No thanks</string>
 
   <string name="settings_dialog_title">Activity Recognition Permission Needed</string>
-  <string name="settings_dialog_message">Give permission manually inside the app\'s
-    settings</string>
+  <string name="settings_dialog_message">Give permission manually inside the app\'s settings</string>
   <string name="settings_dialog_positive_button_text">Go to settings</string>
   <string name="settings_dialog_negative_button_text">No thanks</string>
 
@@ -31,4 +30,26 @@
   <string name="still_text">You are currently standing still!</string>
   <string name="walking_text">You are walking!</string>
   <string name="running_text">You are running, keep doing it!</string>
+
+  // Login screen
+  <string name="welcome_back">Welcome to Time Jar</string>
+  <string name="sign_in_to_continue">Sign in to continue</string>
+  <string name="label_password">Password</string>
+  <string name="hint_enter_email">Enter your email</string>
+  <string name="label_email_address">Email address</string>
+  <string name="hint_enter_password">Enter your password</string>
+  <string name="remember_me">Remember me</string>
+  <string name="forgot_password">Forgot password?</string>
+  <string name="enter">Enter</string>
+  <string name="do_not_have_account">You don\'t have an account ?</string>
+  <string name="sign_up">Sign up</string>
+  <string name="create_an_account">Create an account</string>
+  <string name="name_label">Name</string>
+  <string name="hint_enter_name">Enter your name</string>
+  <string name="confirm_password_label">Confirm password</string>
+  <string name="hint_confirm_password">Confirm your password</string>
+  <string name="already_have_account">Already have an account ?</string>
+  <string name="sign_in">Sign in</string>
+
+
 </resources>
