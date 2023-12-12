@@ -28,11 +28,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +51,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.timejar.app.R
 
+import com.timejar.app.api.supabase.Supabase
+import io.github.jan.supabase.gotrue.gotrue
+import io.github.jan.supabase.gotrue.providers.builtin.Email
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,15 +66,25 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen() {
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val checkedState = remember { mutableStateOf(false) }
 
+    val coroutineScope = rememberCoroutineScope()
+
     val onSignInButtonClicked: (String, String) -> Unit = {email, password ->
         Log.i("LoginScreen", "Email: $email, Password: $password")
+
+        val supabaseClient = Supabase.client  // Accessing the client
+
+        Supabase.login(email, password, onSuccess = {
+            // redirect to new screen
+        }, onFailure = {
+            it.printStackTrace()
+            // loginAlert.value = "There was an error while logging in. Check your credentials and try again."
+        })
     }
     val onForgotPasswordButtonClicked: () -> Unit = {}
     val onSignUpButtonClicked: () -> Unit = {}
@@ -122,9 +137,9 @@ fun LoginScreen() {
                 },
                 placeholder = { Text(text = stringResource(id = R.string.hint_enter_email)) },
                 shape = RoundedCornerShape(8.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF91B3B4),
-                    unfocusedBorderColor = Color(0xFFABB3BB)
+                    unfocusedBorderColor = Color(0xFFABB3BB),
                 ),
                 leadingIcon = {
                     Icon(
@@ -147,9 +162,9 @@ fun LoginScreen() {
                         color = Color(0xFFABB3BB))
                 },                placeholder = { Text(text = stringResource(id = R.string.hint_enter_password)) },
                 shape = RoundedCornerShape(8.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF91B3B4),
-                    unfocusedBorderColor = Color(0xFFABB3BB)
+                    unfocusedBorderColor = Color(0xFFABB3BB),
                 ),
                 leadingIcon = {
                     Icon(
