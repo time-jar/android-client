@@ -65,5 +65,6 @@
   <string name="hint_enter_home_location">Select your home location</string>
   <string name="school_location_label">School location</string>
   <string name="hint_enter_school_location">Select your school location</string>
+    <string name="app_activity_accessibility_service_label">TimeJar_app_activity_accessibility_service</string>
 
 </resources>
