@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -55,19 +56,21 @@ import com.timejar.app.api.supabase.Supabase
 import io.github.jan.supabase.gotrue.gotrue
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LoginScreen()
+            LoginScreen(navController = rememberNavController())
         }
     }
 }
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val checkedState = remember { mutableStateOf(false) }
@@ -87,7 +90,6 @@ fun LoginScreen() {
         })
     }
     val onForgotPasswordButtonClicked: () -> Unit = {}
-    val onSignUpButtonClicked: () -> Unit = {}
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -100,6 +102,27 @@ fun LoginScreen() {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
+
+            Column (
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.fillMaxSize()
+            )
+            {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu Icon",
+                    tint = Color(0xFFABB3BB),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable {
+                            navController.navigate("menu_screen")
+                        }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+
             Image(
                 painter = painterResource(id = R.mipmap.ic_launcher),
                 contentDescription = "Time Jar Logo",
@@ -241,7 +264,9 @@ fun LoginScreen() {
                     color = Color(0xFF91B3B4),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onSignUpButtonClicked() }
+                    modifier = Modifier.clickable {
+                        navController.navigate("sign_up_screen")
+                    }
                 )
             }
         }
@@ -251,5 +276,5 @@ fun LoginScreen() {
 @Composable
 @Preview
 fun LoginScreenPreview() {
-    LoginScreen()
+    LoginScreen(navController = rememberNavController())
 }

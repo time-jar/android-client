@@ -1,14 +1,26 @@
 package com.timejar.app
 
+import NavGraph
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.AppTheme)
-
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContent {
+            MyAppTheme {
+                NavGraph()
+            }
+        }
+    }
+}
+
+@Composable
+fun MyAppTheme(content: @Composable () -> Unit) {
+    MaterialTheme {
+        content()
     }
 }

@@ -1,6 +1,7 @@
 <resources>
   <string name="app_name">Time Jar</string>
 
+  <string name="activity_recognition_label">Activity recognition</string>
   <string name="permission_rational_dialog_title">Activity Recognition Permission Needed</string>
   <string name="permission_rational_dialog_message">To get information about your activity, you need to give Activity Recognition permission to Time Jar.</string>
   <string name="permission_rational_dialog_positive_button_text">Request a permission</string>
@@ -50,21 +51,40 @@
   <string name="hint_enter_name">Enter your name</string>
   <string name="surname_label">Surname</string>
   <string name="hint_enter_surname">Enter your surname</string>
+  <string name="date_of_birth_label">Date of birth</string>
+  <string name="hint_enter_date_of_birth">Enter your date of birth</string>
   <string name="confirm_password_label">Confirm password</string>
   <string name="hint_confirm_password">Confirm your password</string>
   <string name="already_have_account">Already have an account ?</string>
   <string name="confirm">Confirm</string>
   <string name="sign_in">Sign in</string>
 
-  // Profile screen
-  <string name="profile_label">Profile</string>
-  <string name="complete_your_profile">Complete your profile</string>
+  // Location Settings
+  <string name="location_label">Location</string>
+  <string name="enter_your_locations">Enter your locations</string>
   <string name="work_location_label">Work location</string>
   <string name="hint_enter_work_location">Select your work location</string>
   <string name="home_location_label">Home location</string>
   <string name="hint_enter_home_location">Select your home location</string>
   <string name="school_location_label">School location</string>
   <string name="hint_enter_school_location">Select your school location</string>
-    <string name="app_activity_accessibility_service_label">TimeJar_app_activity_accessibility_service</string>
+
+  <string name="app_activity_accessibility_service_label">TimeJar_app_activity_accessibility_service</string>
+
+  // Event Screen
+  <string name="number_of_events">Number of events</string>
+  <string name="last_10_events">Last 10 events</string>
+  <string name="log_out">Log out</string>
+
+  // Permission Screen
+  <string name="permissions">Permissions</string>
+  <string name="enable_permissions">Please enable all the permissions</string>
+  <string name="notification_label">Notification</string>
+
+  // Menu
+  <string name="menu">Menu</string>
+  <string name="login_label">Login</string>
+  <string name="events_label">Events</string>
+  <string name="location_settings_label">Location Settings</string>
 
 </resources>

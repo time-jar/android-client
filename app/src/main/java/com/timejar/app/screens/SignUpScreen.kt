@@ -8,10 +8,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,21 +29,25 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
 import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(navController: NavController) {
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
     var lastName by remember { mutableStateOf(TextFieldValue("")) }
-    // TODO: var dateOfBirth by remember { mutableStateOf(Date("")) }
-    // TODO: var sex by remember { mutableStateOf(TextFieldValue("")) }
+    var dateOfBirth by remember { mutableStateOf(TextFieldValue("")) }
+    val radioOptions = listOf("Male", "Female")
+    var sex by remember { mutableStateOf(radioOptions[0]) }
     var confirmPassword by remember { mutableStateOf(TextFieldValue("")) }
 
-    val onSignUpButtonClicked: (String, String, String, String, Date, String, String) -> Unit = { email, password, firstName, lastName, dateOfBirth, sex, confirmPassword  ->
+    /*val onSignUpButtonClicked: (String, String, String, String, Date, String, String) -> Unit = { email, password, firstName, lastName, dateOfBirth, sex, confirmPassword  ->
         Log.i("LoginScreen", "FirstName: $firstName, LastName: $lastName, Email: $email, Password: $password, Confirm password: $confirmPassword")
 
         if (password.length < 8) {
@@ -56,14 +64,13 @@ fun SignUpScreen() {
             it.printStackTrace()
             // loginAlert.value = "There was an error while logging in. Check your credentials and try again."
         })
-    }
-
-    val onSignInButtonClicked: () -> Unit = {}
+    }*/
 
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color(0xFFE5E5E5))
     ) {
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -71,6 +78,26 @@ fun SignUpScreen() {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
+
+            Column (
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.fillMaxSize()
+            )
+            {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu Icon",
+                    tint = Color(0xFFABB3BB),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable {
+                            navController.navigate("menu_screen")
+                        }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Image(
                 painter = painterResource(id = R.mipmap.ic_launcher),
                 contentDescription = "Time Jar Logo",
@@ -98,6 +125,33 @@ fun SignUpScreen() {
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            Row(
+                Modifier.fillMaxWidth(),
+            ) {
+                radioOptions.forEach { option ->
+                    Row(
+                        Modifier
+                            .padding(end = 50.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (option == sex),
+                            onClick = { sex = option },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = Color(0xFF91B3B4),
+                                unselectedColor = Color(0xFFABB3BB)
+                            )
+                        )
+                        Text(
+                            text = option,
+                            fontSize = 16.sp,
+                            color = Color(0xFF393F45),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
+            }
+
             OutlinedTextField(
                 value = firstName,
                 onValueChange = { firstName = it },
@@ -123,7 +177,7 @@ fun SignUpScreen() {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             OutlinedTextField(
                 value = lastName,
@@ -150,7 +204,34 @@ fun SignUpScreen() {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+
+            OutlinedTextField(
+                value = dateOfBirth,
+                onValueChange = { dateOfBirth = it },
+                label = {
+                    Text(
+                        text = stringResource(id = R.string.date_of_birth_label),
+                        color = Color(0xFFABB3BB)
+                    )
+                },
+                placeholder = { Text(text = stringResource(id = R.string.hint_enter_date_of_birth)) },
+                shape = RoundedCornerShape(8.dp),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color(0xFF91B3B4),
+                    unfocusedBorderColor = Color(0xFFABB3BB)
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "DateRange Icon",
+                        tint = Color(0xFF91B3B4)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
 
             OutlinedTextField(
                 value = email,
@@ -177,7 +258,7 @@ fun SignUpScreen() {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             OutlinedTextField(
                 value = password,
@@ -203,7 +284,7 @@ fun SignUpScreen() {
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             OutlinedTextField(
                 value = confirmPassword,
@@ -233,7 +314,10 @@ fun SignUpScreen() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onSignUpButtonClicked(firstName.text, lastName.text, email.text, password.text, dateOfBirth.text, sex.text, confirmPassword.text) },
+                //onClick = { onSignUpButtonClicked(firstName.text, lastName.text, email.text, password.text, dateOfBirth.text, sex, confirmPassword.text) },
+                onClick = {
+
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                 modifier = Modifier
@@ -267,8 +351,13 @@ fun SignUpScreen() {
                     color = Color(0xFF91B3B4),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onSignInButtonClicked() }
+                    modifier = Modifier.clickable {
+                        navController.navigate("login_screen")
+                    }
                 )
+
+                Spacer(modifier = Modifier.width(100.dp))
+
             }
         }
     }
@@ -277,5 +366,5 @@ fun SignUpScreen() {
 @Preview
 @Composable
 fun SignUpScreenPreview() {
-    SignUpScreen()
+    SignUpScreen(navController = rememberNavController())
 }

@@ -93,4 +93,8 @@ dependencies {
 
     // UI Tests
     androidTestImplementation('androidx.compose.ui:ui-test-junit4:1.6.0-beta02')
+
+    // Datatable
+    implementation("com.seanproctor:datatable:0.2.1")
+
 }
