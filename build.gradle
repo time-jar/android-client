@@ -6,7 +6,7 @@ buildscript {
     kotlin_version = '1.9.21'
     compileSdkVersion = 34
     targetSdkVersion = compileSdkVersion
-    minSdkVersion = 24
+    minSdkVersion = 26
   }
 
   repositories {

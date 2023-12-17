@@ -21,13 +21,14 @@ class AppActivityAccessibilityService : AccessibilityService() {
             val currentPackageName = event.packageName.toString()
 
             if (currentPackageName != lastPackageName) {
+                val currentTime = System.currentTimeMillis()
+
                 if (lastPackageName != null) {
                     // An app was switched or closed
-                    handleAppClosedOrSwitched(lastPackageName!!)
+                    handleAppClosedOrSwitched(lastPackageName!!, currentTime)
                 }
 
                 // A new app was opened
-                val currentTime = System.currentTimeMillis()
                 handleAppOpened(currentPackageName, currentTime)
                 lastPackageName = currentPackageName
             }
@@ -47,12 +48,21 @@ class AppActivityAccessibilityService : AccessibilityService() {
         })
     }
 
-    private fun handleAppClosedOrSwitched(packageName: String) {
+    private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
         Log.i("AppActivity", "App closed or switched: $packageName")
         val mostFrequentActivity = activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
-        Log.i("AppActivity", "Most Frequent Activity during this period: $mostFrequentActivity")
+        Log.i("AppActivity", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
 
-        // fill missing supabase info
+        // TODO: These 2 should be acquired from notification
+        val acceptance = 1
+        val shouldBeBlocked = false
+
+        Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity!!.type, eventTime, onSuccess = {
+            //
+        }, onFailure = {
+            it.printStackTrace()
+            // loginAlert.value = "There was an error."
+        })
     }
 
     override fun onInterrupt() {

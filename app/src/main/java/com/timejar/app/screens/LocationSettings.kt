@@ -15,16 +15,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +43,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationSettings(navController: NavController) {
     var workLocation by remember { mutableStateOf(TextFieldValue("")) }
@@ -124,9 +120,9 @@ fun LocationSettings(navController: NavController) {
                 },
                 placeholder = { Text(text = stringResource(id = R.string.hint_enter_home_location)) },
                 shape = RoundedCornerShape(8.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF91B3B4),
-                    unfocusedBorderColor = Color(0xFFABB3BB)
+                    unfocusedBorderColor = Color(0xFFABB3BB),
                 ),
                 modifier = Modifier.fillMaxWidth().height(100.dp),
             )
@@ -144,9 +140,9 @@ fun LocationSettings(navController: NavController) {
                 },
                 placeholder = { Text(text = stringResource(id = R.string.hint_enter_home_location)) },
                 shape = RoundedCornerShape(8.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF91B3B4),
-                    unfocusedBorderColor = Color(0xFFABB3BB)
+                    unfocusedBorderColor = Color(0xFFABB3BB),
                 ),
                 modifier = Modifier.fillMaxWidth().height(100.dp),
             )
@@ -164,9 +160,9 @@ fun LocationSettings(navController: NavController) {
                 },
                 placeholder = { Text(text = stringResource(id = R.string.hint_enter_school_location)) },
                 shape = RoundedCornerShape(8.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF91B3B4),
-                    unfocusedBorderColor = Color(0xFFABB3BB)
+                    unfocusedBorderColor = Color(0xFFABB3BB),
                 ),
                 modifier = Modifier.fillMaxWidth().height(100.dp),
             )

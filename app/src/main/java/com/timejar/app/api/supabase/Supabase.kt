@@ -1,6 +1,7 @@
 package com.timejar.app.api.supabase
 
 import android.app.Application
+import androidx.compose.ui.text.toLowerCase
 import com.timejar.app.BuildConfig
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.GoTrue
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.util.Date
+import java.util.Locale
 
 data class User(
     val id: String,
@@ -35,7 +37,7 @@ class Supabase : Application() {
 
         private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-        fun signUp(userEmail: String, userPassword: String, userFirstName: String, userLastName: String, userDateOfBirth: Date, sexString: String,
+        fun signUp(sexString: String,  first_name: String, last_name: String, date_of_birth: Date, userEmail: String, userPassword: String,
                    onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
             coroutineScope.launch {
                 try {
@@ -44,14 +46,21 @@ class Supabase : Application() {
                         password = userPassword
                     }
 
-                    val user = client.gotrue.retrieveUserForCurrentSession()
-                    val sex = if (sexString === "male") 1 else 2 // male or female
-                    val userInfo = User(user.aud,userFirstName, userLastName,userDateOfBirth, sex)
+                    val id = client.gotrue.retrieveUserForCurrentSession().id
+                    val sex = if (sexString.lowercase(Locale.ROOT) === "male") 1 else 2 // male or female
+
+                    val userInfo = User(
+                        id,
+                        first_name,
+                        last_name,
+                        date_of_birth,
+                        sex
+                    )
                     client.postgrest.from("users").insert(userInfo)
 
                     onSuccess() // Invoke the success callback
                 } catch (e: Exception) {
-                    onFailure(Exception("Signup failed"))
+                    onFailure(Exception("SignUp failed"))
                     onFailure(e)
                 }
             }
@@ -68,19 +77,35 @@ class Supabase : Application() {
 
                     onSuccess() // Invoke the success callback
                 } catch (e: Exception) {
-                    onFailure(Exception("Signup failed"))
+                    onFailure(Exception("Login failed"))
+                    onFailure(e)
+                }
+            }
+        }
+
+        fun signOut(onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
+            coroutineScope.launch {
+                try {
+                    client.gotrue.logout()
+
+                    onSuccess() // Invoke the success callback
+                } catch (e: Exception) {
+                    onFailure(Exception("SignOut failed"))
                     onFailure(e)
                 }
             }
         }
 
         fun initialAppActivity(packageName: String, eventTime: Long, location: String,
-                   onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
+                               onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
             coroutineScope.launch {
                 try {
+                    val user = client.gotrue.retrieveUserForCurrentSession()
+
                     client.functions.invoke(
-                        function = "function_name",
+                        function = "initial-app-activity",
                         body = buildJsonObject {
+                            put("userId", user.id)
                             put("packageName", packageName)
                             put("eventTime", eventTime)
                             put("location", location)
@@ -98,11 +123,25 @@ class Supabase : Application() {
             }
         }
 
-        fun endAppActivity(something: String,
-                               onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
+        fun endAppActivity(acceptance: Int, shouldBeBlocked: Boolean, action: Int, eventTime: Long,
+                           onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
             coroutineScope.launch {
                 try {
+                    val user = client.gotrue.retrieveUserForCurrentSession()
 
+                    client.functions.invoke(
+                        function = "initial-app-activity",
+                        body = buildJsonObject {
+                            put("userId", user.id)
+                            put("acceptance", acceptance)
+                            put("should_be_blocked", shouldBeBlocked)
+                            put("action", action)
+                            put("eventTime", eventTime)
+                        },
+                        headers = Headers.build {
+                            append(HttpHeaders.ContentType, "application/json")
+                        }
+                    )
 
                     onSuccess() // Invoke the success callback
                 } catch (e: Exception) {

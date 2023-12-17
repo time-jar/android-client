@@ -53,12 +53,8 @@ import androidx.compose.ui.unit.sp
 import com.timejar.app.R
 
 import com.timejar.app.api.supabase.Supabase
-import io.github.jan.supabase.gotrue.gotrue
-import io.github.jan.supabase.gotrue.providers.builtin.Email
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,14 +71,10 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val checkedState = remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope()
+    val onSignInButtonClicked: (String, String) -> Unit = {userEmail, userPassword ->
+        Log.i("LoginScreen", "Email: $userEmail, Password: $userPassword")
 
-    val onSignInButtonClicked: (String, String) -> Unit = {email, password ->
-        Log.i("LoginScreen", "Email: $email, Password: $password")
-
-        val supabaseClient = Supabase.client  // Accessing the client
-
-        Supabase.login(email, password, onSuccess = {
+        Supabase.login(userEmail, userPassword, onSuccess = {
             // redirect to new screen
         }, onFailure = {
             it.printStackTrace()

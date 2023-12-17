@@ -13,12 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -159,11 +160,11 @@ fun PermissionScreen(navController: NavController) {
                     }
                 }
 
-                Divider (
-                    color = Color(0xFFABB3BB),
+                HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    color = Color(0xFFABB3BB)
                 )
 
                 Row(

@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -100,11 +100,11 @@ fun Menu(navController: NavController) {
                     }
                 }
 
-                Divider(
-                    color = Color(0xFFABB3BB),
+                HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    color = Color(0xFFABB3BB)
                 )
 
                 Column(
@@ -125,11 +125,11 @@ fun Menu(navController: NavController) {
                     )
                 }
 
-                Divider(
-                    color = Color(0xFFABB3BB),
+                HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    color = Color(0xFFABB3BB)
                 )
 
                 Column(
@@ -150,11 +150,11 @@ fun Menu(navController: NavController) {
                     )
                 }
 
-                Divider(
-                    color = Color(0xFFABB3BB),
+                HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    color = Color(0xFFABB3BB)
                 )
 
                 Column(

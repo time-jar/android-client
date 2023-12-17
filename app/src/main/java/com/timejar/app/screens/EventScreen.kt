@@ -13,9 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -41,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import com.seanproctor.datatable.Table
 import com.seanproctor.datatable.TableColumnDefinition
 import com.timejar.app.R
+import com.timejar.app.api.supabase.Supabase
 
 @Composable
 fun EventScreen(navController: NavController) {
@@ -156,7 +155,7 @@ fun EventScreen(navController: NavController) {
                 horizontalAlignment = AbsoluteAlignment.Right
             ) {
                 Button(
-                    onClick = { },
+                    onClick = { Supabase.signOut(onSuccess = {}, onFailure = {})},
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(Color(0xFFC66161)),
                     modifier = Modifier
