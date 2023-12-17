@@ -2,10 +2,14 @@ package com.timejar.app.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,12 +44,41 @@ import com.seanproctor.datatable.Table
 import com.seanproctor.datatable.TableColumnDefinition
 import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
+import com.timejar.app.api.supabase.UserAppUsage
+import androidx.compose.foundation.lazy.LazyColumn
 
 @Composable
 fun EventScreen(navController: NavController) {
+    val scrollState = rememberScrollState()
 
-    val numberOfEvents = 99
-    var selectedRow by remember { mutableStateOf<Int?>(null) }
+    var numberOfEvents = 99
+    var selectedRow by remember { mutableStateOf(-1) }
+    var userAppUsageList by remember { mutableStateOf(emptyList<UserAppUsage>()) }
+
+    val temp = UserAppUsage(
+        id = 3,
+        created_at = "",
+        app_name = 345,
+        user_id = "efsgxfgfhg",
+        acceptance = 3,
+        should_be_blocked = false,
+        action = 2,
+        location = 3,
+        weekday = 5,
+        time_of_day = "ded",
+        app_usage_time = 33
+    )
+
+    userAppUsageList = listOf<UserAppUsage>(temp)
+
+    Supabase.getAppActivityEvents(
+        onSuccess = { data: List<UserAppUsage> ->
+            userAppUsageList = data
+        },
+        onFailure = { error ->
+            // Handle the error
+        }
+    )
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -118,33 +151,63 @@ fun EventScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Table(
-                    columns = listOf(
-                        TableColumnDefinition {
-                            Text("Header A")
-                        },
-                        TableColumnDefinition {
-                            Text("Header B")
-                        },
-                        TableColumnDefinition(Alignment.CenterEnd) {
-                            Text("Header C")
-                        },
-                    )
-                ) {
-                    row {
-                        onClick = { selectedRow = 0 }
-                        cell { Text("Cell A1") }
-                        cell { Text("Cell B1") }
-                        cell { Text("Cell C1") }
-                    }
-                    row {
-                        onClick = { selectedRow = 1 }
-                        cell { Text("Cell A2") }
-                        cell { Text("Cell B2") }
-                        cell { Text("Cell C2") }
-                    }
-                }
+                Column(modifier = Modifier.horizontalScroll(scrollState)) {
 
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text("ID", modifier = Modifier.weight(1f))
+                        Text("App Name", modifier = Modifier.weight(1f))
+                        Text("Created At", modifier = Modifier.weight(1f))
+                        Text("User ID", modifier = Modifier.weight(1f))
+                        Text("Acceptance", modifier = Modifier.weight(1f))
+                        // Add other headers as needed
+                    }
+
+                    // Data rows
+                    userAppUsageList.forEach { usage ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(text = usage.id.toString(), modifier = Modifier.weight(1f))
+                            Text(text = usage.app_name.toString(), modifier = Modifier.weight(1f))
+                            Text(text = usage.created_at.toString(), modifier = Modifier.weight(1f))
+                            Text(text = usage.user_id, modifier = Modifier.weight(1f))
+                            Text(text = usage.acceptance?.toString() ?: "N/A", modifier = Modifier.weight(1f))
+                            // Add other data cells as needed
+                        }
+                    }
+
+                    /*
+                    Table(
+                        columns = listOf(
+                            TableColumnDefinition { Text("ID") },
+                            TableColumnDefinition { Text("Created At") },
+                            TableColumnDefinition { Text("App Name") },
+                            TableColumnDefinition { Text("User ID") },
+                            TableColumnDefinition { Text("Acceptance") },
+                            TableColumnDefinition { Text("Should Be Blocked") },
+                            TableColumnDefinition { Text("Action") },
+                            TableColumnDefinition { Text("Location") },
+                            TableColumnDefinition { Text("Weekday") },
+                            TableColumnDefinition { Text("Time of Day") },
+                            TableColumnDefinition { Text("App Usage Time") }
+                        )
+                    ) { userAppUsageList.forEachIndexed { index, usage ->
+                            row {
+                                onClick = { selectedRow = index }
+                                cell { Text(usage.id.toString()) }
+                                cell { Text(usage.created_at) }
+                                cell { Text(usage.app_name.toString()) }
+                                cell { Text(usage.user_id) }
+                                cell { Text(usage.acceptance?.toString() ?: "N/A") }
+                                cell { Text(usage.should_be_blocked?.toString() ?: "N/A") }
+                                cell { Text(usage.action?.toString() ?: "N/A") }
+                                cell { Text(usage.location.toString()) }
+                                cell { Text(usage.weekday.toString()) }
+                                cell { Text(usage.time_of_day) }
+                                cell { Text(usage.app_usage_time?.toString() ?: "N/A") }
+                            }
+                        }
+                    }
+                    */
+                }
             }
 
             Spacer(modifier = Modifier.height(50.dp))
@@ -179,3 +242,4 @@ fun EventScreen(navController: NavController) {
 fun EventScreenPreview() {
     EventScreen(navController = rememberNavController())
 }
+
