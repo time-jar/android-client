@@ -1,7 +1,6 @@
 package com.timejar.app.api.supabase
 
 import android.app.Application
-import androidx.compose.ui.text.toLowerCase
 import com.timejar.app.BuildConfig
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.GoTrue
@@ -12,6 +11,7 @@ import io.github.jan.supabase.gotrue.gotrue
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.CoroutineScope
@@ -24,10 +24,24 @@ import java.util.Locale
 
 data class User(
     val id: String,
-    val firstName: String,
-    val lastName: String,
-    val dateOfBirth: Date,
+    val first_name: String,
+    val last_name: String,
+    val date_of_birth: Date,
     val sex: Int,
+)
+
+data class UserAppUsage(
+    val id: Long,
+    val created_at: String,
+    val app_name: Long,
+    val user_id: String,
+    val acceptance: Long?,
+    val should_be_blocked: Boolean?,
+    val action: Int?,
+    val location: Int,
+    val weekday: Int,
+    val time_of_day: String,
+    val app_usage_time: Long?
 )
 
 class Supabase : Application() {
@@ -151,6 +165,28 @@ class Supabase : Application() {
             }
         }
 
+        fun getAppActivityEvents(
+            onSuccess: (List<UserAppUsage>) -> Unit,
+            onFailure: (Throwable) -> Unit
+        ) {
+            coroutineScope.launch {
+                try {
+                    val id = client.gotrue.retrieveUserForCurrentSession().id
+
+                    val response = client.postgrest.from("user_app_usage")
+                        .select(filter = {
+                            eq("user_id", id)
+                            order(column = "created_at", order = Order.DESCENDING)
+                            limit(10)
+                        }).decodeList<UserAppUsage>()
+
+                    onSuccess(response)
+                } catch (e: Exception) {
+                    onFailure(Exception("Failed to fetch user_app_usage: ${e.message}"))
+                    onFailure(e)
+                }
+            }
+        }
     }
 
     override fun onCreate() {
