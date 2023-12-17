@@ -78,7 +78,7 @@
 
   // Permission Screen
   <string name="permissions">Permissions</string>
-  <string name="enable_permissions">Please enable all the permissions</string>
+  <string name="enable_permissions">All permissions are required. If any permission was denied by mistake, please grant it in your device settings.</string>
   <string name="notification_label">Notification</string>
 
   // Menu

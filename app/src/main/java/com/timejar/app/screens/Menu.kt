@@ -64,7 +64,7 @@ fun Menu(navController: NavController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 100.dp)
+                    .padding(horizontal = 24.dp, vertical = 80.dp)
             ) {
 
                 Text(

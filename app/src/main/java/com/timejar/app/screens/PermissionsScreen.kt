@@ -1,5 +1,8 @@
 package com.timejar.app.screens
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -32,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +43,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import android.Manifest
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.navigation.Navigator
 import com.timejar.app.R
+import com.timejar.app.permissions.PermissionViewModel
 
 class PermissionsScreen {
 
@@ -53,13 +69,37 @@ class PermissionsScreen {
 
 @Composable
 fun PermissionScreen(navController: NavController) {
-    var notificationSwitch by remember { mutableStateOf(true) }
-    var locationSwitch by remember { mutableStateOf(true) }
-    var activityRecognitionSwitch by remember { mutableStateOf(true) }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFFE5E5E5))
+    val viewModel: PermissionViewModel = viewModel()
+
+    val firstClickNotification = rememberSaveable { mutableStateOf(true) }
+    var firstClickLocation = rememberSaveable { mutableStateOf(true) }
+    var firstClickActivityRecognition = rememberSaveable { mutableStateOf(true) }
+
+    // Notification permission
+    val requestNotificationPermissionLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+            viewModel.onNotificationPermissionResult(isGranted)
+        }
+
+    // Location permission
+    val requestLocationPermissionLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+            viewModel.onLocationPermissionResult(isGranted)
+            firstClickLocation.value = false
+        }
+
+    // Activity Recognition permission
+    val requestActivityRecognitionPermissionLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+            viewModel.onActivityRecognitionPermissionResult(isGranted)
+            firstClickActivityRecognition.value = false
+        }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFE5E5E5))
     ) {
 
         Column(
@@ -71,7 +111,7 @@ fun PermissionScreen(navController: NavController) {
         ) {
 
 
-            Column (
+            Column(
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.fillMaxSize()
             )
@@ -88,9 +128,9 @@ fun PermissionScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
-            Text (
+            Text(
                 text = stringResource(id = R.string.permissions),
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.SansSerif,
@@ -142,21 +182,19 @@ fun PermissionScreen(navController: NavController) {
                             .fillMaxWidth()
                     ) {
 
-                        Switch(
-                            checked = notificationSwitch,
-                            onCheckedChange = {
-                                notificationSwitch = it
+                        Button(
+                            onClick = {
+                                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                if (firstClickNotification.value) {
+                                    firstClickNotification.value = false
+                                }
                             },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF91B3B4),
-                                checkedBorderColor = Color(0xFF91B3B4),
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color(0xFFABB3BB),
-                                uncheckedBorderColor = Color(0xFFABB3BB)
-                            ),
+                            enabled = firstClickNotification.value,
+                            colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
-                        )
+                        ) {
+                            Text("Enable")
+                        }
                     }
                 }
 
@@ -190,31 +228,26 @@ fun PermissionScreen(navController: NavController) {
                         )
                     }
 
-                    Column (
+                    Column(
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier
                             .fillMaxWidth()
-                    ){
+                    ) {
 
-                        Switch(
-                            checked = locationSwitch,
-                            onCheckedChange = {
-                                locationSwitch = it
+                        Button(
+                            onClick = {
+                                requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF91B3B4),
-                                checkedBorderColor = Color(0xFF91B3B4),
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color(0xFFABB3BB),
-                                uncheckedBorderColor = Color(0xFFABB3BB)
-                            ),
+                            enabled = firstClickLocation.value,
+                            colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
-                        )
+                        ) {
+                            Text("Enable")
+                        }
                     }
                 }
 
-                Divider (
+                Divider(
                     color = Color(0xFFABB3BB),
                     modifier = Modifier
                         .height(1.dp)
@@ -244,33 +277,31 @@ fun PermissionScreen(navController: NavController) {
                         )
                     }
 
-                    Column (
+
+                    Column(
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier
                             .fillMaxWidth()
-                    ){
+                    ) {
 
-                        Switch(
-                            checked = activityRecognitionSwitch,
-                            onCheckedChange = {
-                                activityRecognitionSwitch = it
+                        Button(
+                            onClick = {
+                                requestActivityRecognitionPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
                             },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF91B3B4),
-                                checkedBorderColor = Color(0xFF91B3B4),
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color(0xFFABB3BB),
-                                uncheckedBorderColor = Color(0xFFABB3BB)
-                            ),
+                            enabled = firstClickActivityRecognition.value,
+                            colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
-                        )
+                        ) {
+                            Text("Enable")
+                        }
                     }
                 }
             }
         }
     }
 }
+
+
 
 @Composable
 @Preview

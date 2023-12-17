@@ -331,12 +331,13 @@ fun SignUpScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical=24.dp)
+
             ) {
                 Text(
                     text = stringResource(id = R.string.already_have_account),
@@ -353,9 +354,6 @@ fun SignUpScreen(navController: NavController) {
                         navController.navigate("login_screen")
                     }
                 )
-
-                Spacer(modifier = Modifier.width(100.dp))
-
             }
         }
     }
