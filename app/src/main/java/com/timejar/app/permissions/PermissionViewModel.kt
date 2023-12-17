@@ -8,13 +8,8 @@ import androidx.lifecycle.ViewModel
 
 class PermissionViewModel : ViewModel() {
     private val _notificationPermissionEnabled = mutableStateOf(false)
-    val notificationPermissionEnabled: State<Boolean> get() = _notificationPermissionEnabled
-
     private val _locationPermissionEnabled = mutableStateOf(false)
-    val locationPermissionEnabled: State<Boolean> get() = _locationPermissionEnabled
-
     private val _activityRecognitionPermissionEnabled = mutableStateOf(false)
-    val activityRecognitionPermissionEnabled: State<Boolean> get() = _activityRecognitionPermissionEnabled
 
     fun onNotificationPermissionResult(isGranted: Boolean) {
         _notificationPermissionEnabled.value = isGranted
