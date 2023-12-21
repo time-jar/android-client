@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 
 android {
     compileSdk 34
@@ -17,8 +18,9 @@ android {
         def secretsPropertiesFile = rootProject.file("secrets.properties")
         secretsProperties.load(new FileInputStream(secretsPropertiesFile))
         buildConfigField('String', 'SUPABASE_URL', "\"${secretsProperties['SUPABASE_URL']}\"")
-        buildConfigField 'String', 'SUPABASE_KEY', "\"${secretsProperties['SUPABASE_KEY']}\""
-        buildConfigField 'String', 'PLACES_API_KEY', "\"${secretsProperties['PLACES_API_KEY']}\""
+        buildConfigField('String', 'SUPABASE_KEY', "\"${secretsProperties['SUPABASE_KEY']}\"")
+        buildConfigField('String', 'PLACES_API_KEY', "\"${secretsProperties['PLACES_API_KEY']}\"")
+        buildConfigField('String', 'GOOGLE_MAPS_API_KEY', "\"${secretsProperties['GOOGLE_MAPS_API_KEY']}\"")
     }
 
     compileOptions {
@@ -32,8 +34,8 @@ android {
 
     buildTypes {
         release {
-          minifyEnabled false
-          proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -45,6 +47,17 @@ android {
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.6"
+    }
+
+    secrets {
+        // Optionally specify a different file name containing your secrets.
+        // The plugin defaults to "local.properties"
+        propertiesFileName = "secrets.properties"
+
+        // Configure which keys should be ignored by the plugin by providing regular expressions.
+        // "sdk.dir" is ignored by default.
+        ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+        ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
     }
 
     namespace 'com.timejar.app'
