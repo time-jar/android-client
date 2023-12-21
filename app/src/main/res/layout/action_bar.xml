@@ -1,0 +1,14 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <ImageView
+        android:id="@+id/menuIcon"
+        android:layout_width="57dp"
+        android:layout_height="63dp"
+        android:contentDescription="Menu"
+        android:onClick="onMenuIconClick"
+        android:src="@drawable/ic_menu" />
+</RelativeLayout>

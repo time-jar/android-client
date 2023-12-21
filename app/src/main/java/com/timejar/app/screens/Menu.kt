@@ -139,6 +139,31 @@ fun Menu(navController: NavController) {
 
                     Text(
                         textAlign = TextAlign.Left,
+                        text = stringResource(id = R.string.title_activity_maps),
+                        color = Color(0xFFABB3BB),
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                            .clickable {
+                                navController.navigate("map_screen")
+                            }
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .height(1.dp)
+                        .fillMaxWidth(),
+                    color = Color(0xFFABB3BB)
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(20.dp)
+                ) {
+
+                    Text(
+                        textAlign = TextAlign.Left,
                         text = stringResource(id = R.string.location_settings_label),
                         color = Color(0xFFABB3BB),
                         fontFamily = FontFamily.SansSerif,

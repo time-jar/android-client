@@ -27,6 +27,9 @@ fun NavGraph(){
         composable("location_settings_screen"){
             LocationSettings(navController = navController)
         }
+        composable("map_screen") {
+            MapScreen(navController = navController)
+        }
         composable("permissions_screen"){
             PermissionScreen(navController = navController)
         }
