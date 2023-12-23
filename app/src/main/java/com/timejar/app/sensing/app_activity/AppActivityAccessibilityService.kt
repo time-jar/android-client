@@ -4,7 +4,11 @@ import android.accessibilityservice.AccessibilityService
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.timejar.app.api.supabase.Supabase
+import com.timejar.app.sensing.notification.handleUserDecisionNotification
 import com.timejar.app.sensing.user_activity.UserActivityRecognitionService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AppActivityAccessibilityService : AccessibilityService() {
 
@@ -49,20 +53,20 @@ class AppActivityAccessibilityService : AccessibilityService() {
     }
 
     private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
-        Log.i("AppActivity", "App closed or switched: $packageName")
-        val mostFrequentActivity = activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
-        Log.i("AppActivity", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
+        CoroutineScope(Dispatchers.Main).launch {
+            Log.i("AppActivity", "App closed or switched: $packageName")
+            val mostFrequentActivity = activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
+            Log.i("AppActivity", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
 
-        // TODO: These 2 should be acquired from notification
-        val acceptance = 1
-        val shouldBeBlocked = false
+            val (shouldBeBlocked, acceptance) = handleUserDecisionNotification(this@AppActivityAccessibilityService)
 
-        Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity!!.type, eventTime, onSuccess = {
-            //
-        }, onFailure = {
-            it.printStackTrace()
-            // loginAlert.value = "There was an error."
-        })
+            Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity!!.type, eventTime, onSuccess = {
+                //
+            }, onFailure = {
+                it.printStackTrace()
+                // loginAlert.value = "There was an error."
+            })
+        }
     }
 
     override fun onInterrupt() {

@@ -34,6 +34,9 @@
             </intent-filter>
         </activity>
 
+        <!-- BroadcastReceiver for handling user decisions from notifications -->
+        <receiver android:name="com.timejar.app.sensing.notification.UserDecisionReceiver" />
+
         <activity
             android:name=".map.MapsActivity"
             android:label="Map">

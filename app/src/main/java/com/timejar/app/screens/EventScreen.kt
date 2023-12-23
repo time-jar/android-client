@@ -151,7 +151,7 @@ fun EventScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Column(modifier = Modifier.horizontalScroll(scrollState)) {
+                Column(/*modifier = Modifier.horizontalScroll(scrollState) */) {
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Text("ID", modifier = Modifier.weight(1f))
