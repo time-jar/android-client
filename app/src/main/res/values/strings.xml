@@ -1,6 +1,8 @@
 <resources>
   <string name="app_name">Time Jar</string>
 
+  <string name="app_activity_accessibility_service">AppActivityAccessibilityService</string>
+
   <string name="activity_recognition_label">Activity recognition</string>
   <string name="permission_rational_dialog_title">Activity Recognition Permission Needed</string>
   <string name="permission_rational_dialog_message">To get information about your activity, you need to give Activity Recognition permission to Time Jar.</string>

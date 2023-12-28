@@ -10,6 +10,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+val blacklistedApps = listOf<String>("com.google.android.apps.nexuslauncher", "com.android.settings")
+
 class AppActivityAccessibilityService : AccessibilityService() {
 
     private var lastPackageName: String? = null
@@ -18,9 +20,16 @@ class AppActivityAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         activityRecognitionManager = UserActivityRecognitionService(this)
+
+        Log.e("AppActivityAccessibilityService onServiceConnected", "SUCCESS")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        if (!Supabase.isLoggedIn()) {
+            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
+            return
+        }
+
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val currentPackageName = event.packageName.toString()
 
@@ -33,39 +42,50 @@ class AppActivityAccessibilityService : AccessibilityService() {
                 }
 
                 // A new app was opened
+                if (blacklistedApps.contains(currentPackageName)) {
+                    Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented tracking $currentPackageName")
+                    return
+                }
+
                 handleAppOpened(currentPackageName, currentTime)
                 lastPackageName = currentPackageName
+
+                Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Tracking $currentPackageName")
             }
         }
     }
 
     private fun handleAppOpened(packageName: String, eventTime: Long) {
-        Log.i("AppActivity", "App opened: $packageName")
+        Log.i("AppActivityAccessibilityService handleAppOpened", "App opened: $packageName")
         activityRecognitionManager?.startTracking()
 
+        /*
         // send to Supabase
         Supabase.initialAppActivity(packageName, eventTime, "", onSuccess = {
-            //
+            Log.i("AppActivityAccessibilityService handleAppOpened", "SUCCESS")
         }, onFailure = {
             it.printStackTrace()
-            // loginAlert.value = "There was an error while logging in. Check your credentials and try again."
+            Log.e("AppActivityAccessibilityService handleAppOpened", "${it.message}")
         })
+        */
     }
 
     private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
         CoroutineScope(Dispatchers.Main).launch {
-            Log.i("AppActivity", "App closed or switched: $packageName")
+            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App closed or switched: $packageName")
             val mostFrequentActivity = activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
-            Log.i("AppActivity", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
+            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
 
             val (shouldBeBlocked, acceptance) = handleUserDecisionNotification(this@AppActivityAccessibilityService)
 
+            /*
             Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity!!.type, eventTime, onSuccess = {
-                //
+                Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "SUCCESS")
             }, onFailure = {
                 it.printStackTrace()
-                // loginAlert.value = "There was an error."
+                Log.e("AppActivityAccessibilityService handleAppClosedOrSwitched", "${it.message}")
             })
+            */
         }
     }
 

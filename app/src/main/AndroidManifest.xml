@@ -37,6 +37,21 @@
         <!-- BroadcastReceiver for handling user decisions from notifications -->
         <receiver android:name="com.timejar.app.sensing.notification.UserDecisionReceiver" />
 
+        <service
+            android:name="com.timejar.app.sensing.app_activity.AppActivityAccessibilityService"
+            android:label="@string/app_activity_accessibility_service"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/app_activity_accessibility_service_config" />
+        </service>
+
+
         <activity
             android:name=".map.MapsActivity"
             android:label="Map">

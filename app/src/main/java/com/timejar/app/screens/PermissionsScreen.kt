@@ -76,6 +76,15 @@ fun PermissionScreen(navController: NavController) {
     var firstClickLocation = rememberSaveable { mutableStateOf(true) }
     var firstClickActivityRecognition = rememberSaveable { mutableStateOf(true) }
 
+    /* TODO: Enable accessibility service
+
+    // Settings -> Accessibility -> [Your Service] and turn it on.
+
+    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+    startActivity(intent)
+
+    */
+
     // Notification permission
     val requestNotificationPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->

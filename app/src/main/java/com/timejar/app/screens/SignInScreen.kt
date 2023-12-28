@@ -63,13 +63,13 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LoginScreen(navController = rememberNavController())
+            SignInScreen(navController = rememberNavController())
         }
     }
 }
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun SignInScreen(navController: NavController) {
     val context = LocalContext.current
     var uiToastMessage by remember { mutableStateOf<String?>(null) }
 
@@ -87,16 +87,17 @@ fun LoginScreen(navController: NavController) {
         Log.i("LoginScreen", "Email: $userEmail, Password: $userPassword")
 
         Supabase.login(userEmail, userPassword, onSuccess = {
-            uiToastMessage = "SignInScreen onSignUpButtonClicked SUCCESS"
+            uiToastMessage = "SignInScreen onSignInButtonClicked SUCCESS"
 
             // TODO: redirect to new screen
         }, onFailure = {
             it.printStackTrace()
             val alert = "${it.message}"
-            Log.e("SignInScreen onSignUpButtonClicked", alert)
+            Log.e("SignInScreen onSignInButtonClicked", alert)
             uiToastMessage = alert
         })
     }
+
     val onForgotPasswordButtonClicked: () -> Unit = {}
 
     Box(modifier = Modifier
@@ -284,5 +285,5 @@ fun LoginScreen(navController: NavController) {
 @Composable
 @Preview
 fun LoginScreenPreview() {
-    LoginScreen(navController = rememberNavController())
+    SignInScreen(navController = rememberNavController())
 }

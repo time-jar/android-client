@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityRecognitionClient
@@ -22,20 +23,21 @@ class UserActivityRecognitionService(private val context: Context) {
 
     private val pendingIntent: PendingIntent by lazy {
         val intent = Intent(context, ActivityRecognitionReceiver::class.java)
-        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     fun startTracking() {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             activityRecognitionClient.requestActivityUpdates(detectionIntervalMillis, pendingIntent)
                 .addOnSuccessListener {
-                    // Successfully registered
+                    Log.i("UserActivityRecognitionService startTracking", "Registered")
                 }
                 .addOnFailureListener {
-                    // Failed to register
+                    Log.e("UserActivityRecognitionService startTracking", "Failed to register")
                 }
         } else {
             // Handle permission not granted
+            Log.e("UserActivityRecognitionService startTracking", "Permissions not granted")
         }
     }
 
@@ -43,16 +45,17 @@ class UserActivityRecognitionService(private val context: Context) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
             activityRecognitionClient.removeActivityUpdates(pendingIntent)
                 .addOnSuccessListener {
-                    // Successfully unregistered
+                    Log.i("UserActivityRecognitionService stopTrackingAndReturnMostFrequentActivity", "Successfully unregistered")
                 }
                 .addOnFailureListener {
-                    // Failed to unregister
+                    Log.e("UserActivityRecognitionService stopTrackingAndReturnMostFrequentActivity", "Failed to unregister")
                 }
             val mostFrequentActivity = getMostFrequentActivity()
             activityCounts.clear()  // Reset activity counts for the next period
             return mostFrequentActivity
         } else {
             // Handle permission not granted
+            Log.e("UserActivityRecognitionService stopTrackingAndReturnMostFrequentActivity", "Permissions not granted")
             return null
         }
     }
