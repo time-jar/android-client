@@ -40,12 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.seanproctor.datatable.Table
-import com.seanproctor.datatable.TableColumnDefinition
 import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.api.supabase.UserAppUsage
-import androidx.compose.foundation.lazy.LazyColumn
 
 @Composable
 fun EventScreen(navController: NavController) {

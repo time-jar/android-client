@@ -1,6 +1,7 @@
 package com.timejar.app.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -31,12 +33,16 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun SignUpScreen(navController: NavController) {
+    val context = LocalContext.current
+    var uiToastMessage by remember { mutableStateOf<String?>(null) }
+
     val radioOptions = listOf("Male", "Female")
     var sex by remember { mutableStateOf(radioOptions[0]) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
@@ -48,24 +54,55 @@ fun SignUpScreen(navController: NavController) {
 
     val formatter = SimpleDateFormat("dd.mm.yyyy", Locale.ENGLISH);
 
-    val onSignUpButtonClicked: (String, String, String, Date, String, String, String) -> Unit = { userSex, userFirstName, userLastName, userDateOfBirth, userEmail, userPassword, userConfirmPassword  ->
-        Log.i("LoginScreen", "Sex: $userSex, FirstName: $userFirstName, LastName: $userLastName, Email: $userEmail, Password: $userPassword, Confirm password: $confirmPassword")
-
-        if (userPassword.length < 8) {
-            // loginAlert.value = "Password has to be at least 8 characters."
+    LaunchedEffect(uiToastMessage) {
+        uiToastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         }
-
-        if (userPassword != userConfirmPassword) {
-            // loginAlert.value = "Passwords are not the same."
-        }
-
-        Supabase.signUp(userSex, userFirstName, userLastName, userDateOfBirth, userEmail, userPassword, onSuccess = {
-            // redirect to new screen
-        }, onFailure = {
-            it.printStackTrace()
-            // loginAlert.value = "There was an error while logging in. Check your credentials and try again."
-        })
     }
+
+    val onSignUpButtonClicked: (String, String, String, String, String, String, String) -> Unit =
+        onSignUpButtonClicked@{ userSex, userFirstName, userLastName, userDateOfBirth, userEmail, userPassword, userConfirmPassword  ->
+            Log.i("LoginScreen", "Sex: $userSex, FirstName: $userFirstName, LastName: $userLastName, Email: $userEmail, Password: $userPassword, Confirm password: $confirmPassword")
+
+            var parsedUserDateOfBirth: Date = Date()
+
+            try {
+                parsedUserDateOfBirth = formatter.parse(userDateOfBirth) ?: throw ParseException("Invalid date format, should be dd.mm.yyyy", 0)
+            } catch (e: ParseException) {
+                val alert = "Please enter the date in dd/MM/yyyy format. ${e.message}"
+                Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                uiToastMessage = alert
+
+                return@onSignUpButtonClicked
+            }
+
+            if (userPassword.length < 8) {
+                val alert = "Password has to be at least 8 characters."
+                Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                uiToastMessage = alert
+
+                return@onSignUpButtonClicked
+            }
+
+            if (userPassword != userConfirmPassword) {
+                val alert = "Passwords are not the same."
+                Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                uiToastMessage = alert
+
+                return@onSignUpButtonClicked
+            }
+
+            Supabase.signUp(userSex, userFirstName, userLastName, parsedUserDateOfBirth, userEmail, userPassword, onSuccess = {
+                uiToastMessage = "SignUpScreen onSignUpButtonClicked SUCCESS"
+
+                // TODO: redirect to new screen
+            }, onFailure = {
+                it.printStackTrace()
+                val alert = "${it.message}"
+                Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                uiToastMessage = alert
+            })
+        }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -315,7 +352,7 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onSignUpButtonClicked(sex, firstName.text, lastName.text, formatter.parse(dateOfBirth.text)!!, email.text, password.text, confirmPassword.text) },
+                onClick = { onSignUpButtonClicked( sex, firstName.text, lastName.text, dateOfBirth.text, email.text, password.text, confirmPassword.text) },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                 modifier = Modifier
