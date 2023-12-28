@@ -2,6 +2,7 @@ package com.timejar.app.screens
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.activity.compose.setContent
@@ -34,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -67,18 +70,31 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(navController: NavController) {
+    val context = LocalContext.current
+    var uiToastMessage by remember { mutableStateOf<String?>(null) }
+
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val checkedState = remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiToastMessage) {
+        uiToastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+    }
 
     val onSignInButtonClicked: (String, String) -> Unit = {userEmail, userPassword ->
         Log.i("LoginScreen", "Email: $userEmail, Password: $userPassword")
 
         Supabase.login(userEmail, userPassword, onSuccess = {
-            // redirect to new screen
+            uiToastMessage = "SignInScreen onSignUpButtonClicked SUCCESS"
+
+            // TODO: redirect to new screen
         }, onFailure = {
             it.printStackTrace()
-            // loginAlert.value = "There was an error while logging in. Check your credentials and try again."
+            val alert = "${it.message}"
+            Log.e("SignInScreen onSignUpButtonClicked", alert)
+            uiToastMessage = alert
         })
     }
     val onForgotPasswordButtonClicked: () -> Unit = {}
