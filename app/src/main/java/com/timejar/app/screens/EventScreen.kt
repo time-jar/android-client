@@ -2,10 +2,8 @@ package com.timejar.app.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -204,30 +202,6 @@ fun EventScreen(navController: NavController) {
                         }
                     }
                     */
-                }
-            }
-
-            Spacer(modifier = Modifier.height(50.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                horizontalAlignment = AbsoluteAlignment.Right
-            ) {
-                Button(
-                    onClick = { Supabase.signOut(onSuccess = {}, onFailure = {})},
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFC66161)),
-                    modifier = Modifier
-                        .height(60.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.log_out),
-                        style = TextStyle(
-                            color = Color.White,
-                            fontSize = 20.sp,
-                        )
-                    )
                 }
             }
         }

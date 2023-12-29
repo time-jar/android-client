@@ -1,6 +1,5 @@
 package com.timejar.app.screens
 
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -24,18 +23,11 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -47,15 +39,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import android.Manifest
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.MaterialTheme.colors
-import androidx.compose.material.Scaffold
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.navigation.Navigator
 import com.timejar.app.R
 import com.timejar.app.permissions.PermissionViewModel
 
@@ -71,10 +56,6 @@ class PermissionsScreen {
 fun PermissionScreen(navController: NavController) {
 
     val viewModel: PermissionViewModel = viewModel()
-
-    val firstClickNotification = rememberSaveable { mutableStateOf(true) }
-    var firstClickLocation = rememberSaveable { mutableStateOf(true) }
-    var firstClickActivityRecognition = rememberSaveable { mutableStateOf(true) }
 
     /* TODO: Enable accessibility service
 
@@ -95,14 +76,12 @@ fun PermissionScreen(navController: NavController) {
     val requestLocationPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
             viewModel.onLocationPermissionResult(isGranted)
-            firstClickLocation.value = false
         }
 
     // Activity Recognition permission
     val requestActivityRecognitionPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
             viewModel.onActivityRecognitionPermissionResult(isGranted)
-            firstClickActivityRecognition.value = false
         }
 
     Box(
@@ -194,11 +173,7 @@ fun PermissionScreen(navController: NavController) {
                         Button(
                             onClick = {
                                 requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                if (firstClickNotification.value) {
-                                    firstClickNotification.value = false
-                                }
                             },
-                            enabled = firstClickNotification.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {
@@ -247,7 +222,6 @@ fun PermissionScreen(navController: NavController) {
                             onClick = {
                                 requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             },
-                            enabled = firstClickLocation.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {
@@ -297,7 +271,6 @@ fun PermissionScreen(navController: NavController) {
                             onClick = {
                                 requestActivityRecognitionPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
                             },
-                            enabled = firstClickActivityRecognition.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {

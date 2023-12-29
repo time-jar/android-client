@@ -21,6 +21,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.R
+import com.timejar.app.api.supabase.Supabase
 
 @Composable
 fun Menu(navController: NavController) {
@@ -76,36 +78,39 @@ fun Menu(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(20.dp)
-                ) {
+                if (!Supabase.isLoggedIn()) {
 
-                    Button(
-                        onClick = {
-                            navController.navigate("login_screen")
-                        },
-                        shape = RoundedCornerShape(100.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
-                        modifier = Modifier
-                            .height(60.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(20.dp)
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.login_label),
-                            style = TextStyle(
-                                color = Color.White,
-                                fontSize = 20.sp,
-                            )
-                        )
-                    }
-                }
 
-                HorizontalDivider(
-                    modifier = Modifier
-                        .height(1.dp)
-                        .fillMaxWidth(),
-                    color = Color(0xFFABB3BB)
-                )
+                        Button(
+                            onClick = {
+                                navController.navigate("login_screen")
+                            },
+                            shape = RoundedCornerShape(100.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
+                            modifier = Modifier
+                                .height(60.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.login_label),
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 20.sp,
+                                )
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .height(1.dp)
+                            .fillMaxWidth(),
+                        color = Color(0xFFABB3BB)
+                    )
+                }
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -198,6 +203,33 @@ fun Menu(navController: NavController) {
                                 navController.navigate("permissions_screen")
                             }
                     )
+                }
+
+                if (Supabase.isLoggedIn()) {
+
+                    Spacer(modifier = Modifier.height(50.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Button(
+                            onClick = { Supabase.signOut(onSuccess = {}, onFailure = {}) },
+                            shape = RoundedCornerShape(100.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFC66161)),
+                            modifier = Modifier
+                                .height(60.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.log_out),
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 20.sp,
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }

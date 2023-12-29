@@ -284,6 +284,6 @@ fun SignInScreen(navController: NavController) {
 
 @Composable
 @Preview
-fun LoginScreenPreview() {
+fun SignInScreenPreview() {
     SignInScreen(navController = rememberNavController())
 }
