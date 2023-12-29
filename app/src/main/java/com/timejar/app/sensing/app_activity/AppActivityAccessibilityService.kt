@@ -10,18 +10,25 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-val blacklistedApps = listOf<String>("com.google.android.apps.nexuslauncher", "com.android.settings", "com.android.systemui", "com.google.android.settings.intelligence")
+val minSecondsForApp = 30
+val blacklistedApps = listOf<String>(
+    "com.google.android.apps.nexuslauncher",
+    "com.android.settings",
+    "com.android.systemui",
+    "com.google.android.settings.intelligence"
+)
 
 class AppActivityAccessibilityService : AccessibilityService() {
 
     private var lastPackageName: String? = null
+    private var lastAppOpenTime: Long = 0
     private var activityRecognitionManager: UserActivityRecognitionService? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         activityRecognitionManager = UserActivityRecognitionService(this)
 
-        Log.e("AppActivityAccessibilityService onServiceConnected", "SUCCESS")
+        Log.i("AppActivityAccessibilityService onServiceConnected", "SUCCESS")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
@@ -61,6 +68,8 @@ class AppActivityAccessibilityService : AccessibilityService() {
     }
 
     private fun handleAppOpened(packageName: String, eventTime: Long) {
+        lastAppOpenTime = eventTime  // Record the time the app was opened
+
         Log.i("AppActivityAccessibilityService handleAppOpened", "App opened: $packageName")
         activityRecognitionManager?.startTracking()
 
@@ -76,6 +85,13 @@ class AppActivityAccessibilityService : AccessibilityService() {
     }
 
     private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
+        var timeUsed = eventTime - lastAppOpenTime  // Calculate the duration the app was used
+        timeUsed = timeUsed/1000 // miliseconds to seconds
+        if (timeUsed < minSecondsForApp) {
+            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App $packageName was used for less than $minSecondsForApp seconds (${timeUsed}s).")
+            return  // Exit the function early if the app was used for less than 30 seconds
+        }
+
         CoroutineScope(Dispatchers.Main).launch {
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App closed or switched: $packageName")
             val mostFrequentActivity = activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
@@ -97,6 +113,6 @@ class AppActivityAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        // Handle interruptions
+        Log.e("AppActivityAccessibilityService onInterrupt", "ERROR")
     }
 }

@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.first
 
 const val CHANNEL_ID = "50046746765"
 const val BLOCK_DECISION_NOTIFICATION_ID = 50064986
-const val ACCEPTANCE_ACTION_NOTIFICATION_ID = 50046747
+const val ACCEPTANCE_ACTION_1_NOTIFICATION_ID = 50046747
+const val ACCEPTANCE_ACTION_2_NOTIFICATION_ID = 50046748
 
 data class UserChoices(
     val blockChoice: Int? = null,
@@ -58,7 +59,8 @@ class UserDecisionReceiver : BroadcastReceiver() {
             UserChoiceHandler.choiceReceived(acceptanceChoice = acceptanceChoice)
             // Cancel the acceptance action notification
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.cancel(ACCEPTANCE_ACTION_NOTIFICATION_ID)
+            notificationManager.cancel(ACCEPTANCE_ACTION_1_NOTIFICATION_ID)
+            notificationManager.cancel(ACCEPTANCE_ACTION_2_NOTIFICATION_ID)
         }
     }
 }
@@ -111,13 +113,11 @@ fun showAcceptanceActionNotification(context: Context) {
     val workIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 1) } // "work"
     val studyIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 3) } // "study/learn"
     val relaxationIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 2) } // "relaxation/free time"
-    val wasteIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 4) } // "waste"
 
     // Create PendingIntent for each action
     val workPendingIntent = PendingIntent.getBroadcast(context, 20, workIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     val studyPendingIntent = PendingIntent.getBroadcast(context, 21, studyIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     val relaxationPendingIntent = PendingIntent.getBroadcast(context, 22, relaxationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-    val wastePendingIntent = PendingIntent.getBroadcast(context, 23, wasteIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
     // Create the notification with acceptance actions
     val acceptanceNotification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -127,17 +127,33 @@ fun showAcceptanceActionNotification(context: Context) {
         .addAction(0, "Work", workPendingIntent)
         .addAction(0, "Study", studyPendingIntent)
         .addAction(0, "Relax", relaxationPendingIntent)
+        .setAutoCancel(true)
+        .build()
+
+    notificationManager.notify(ACCEPTANCE_ACTION_1_NOTIFICATION_ID, acceptanceNotification)
+}
+
+fun showWasteChoiceNotification(context: Context) {
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    // Intent and PendingIntent for the "Waste" choice
+    val wasteIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 4) } // "waste"
+    val wastePendingIntent = PendingIntent.getBroadcast(context, 23, wasteIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+
+    // Notification specifically for the "Waste" choice
+    val wasteNotification = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setSmallIcon(R.drawable.acceptance)
         .addAction(0, "Waste", wastePendingIntent)
         .setAutoCancel(true)
         .build()
 
-    notificationManager.notify(ACCEPTANCE_ACTION_NOTIFICATION_ID, acceptanceNotification)
+    notificationManager.notify(ACCEPTANCE_ACTION_2_NOTIFICATION_ID, wasteNotification)
 }
-
 
 suspend fun handleUserDecisionNotification(context: Context): Pair<Int, Int> {
     // Show the notification
     showBlockDecisionNotification(context)
+    showWasteChoiceNotification(context)
     showAcceptanceActionNotification(context)
 
     // Wait for the user's choices

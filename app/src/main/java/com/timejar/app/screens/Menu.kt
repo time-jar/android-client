@@ -1,5 +1,7 @@
 package com.timejar.app.screens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -21,10 +23,16 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -39,6 +47,14 @@ import com.timejar.app.api.supabase.Supabase
 
 @Composable
 fun Menu(navController: NavController) {
+    val context = LocalContext.current
+    var uiToastMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(uiToastMessage) {
+        uiToastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+    }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -215,7 +231,16 @@ fun Menu(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Button(
-                            onClick = { Supabase.signOut(onSuccess = {}, onFailure = {}) },
+                            onClick = { Supabase.signOut(onSuccess = {
+                                uiToastMessage = "Menu signOut SUCCESS"
+
+                                // TODO: redirect to login screen
+                            }, onFailure = {
+                                it.printStackTrace()
+                                val alert = "${it.message}"
+                                Log.e("Menu signOut", alert)
+                                uiToastMessage = alert
+                            }) },
                             shape = RoundedCornerShape(100.dp),
                             colors = ButtonDefaults.buttonColors(Color(0xFFC66161)),
                             modifier = Modifier

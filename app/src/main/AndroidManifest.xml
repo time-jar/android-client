@@ -24,10 +24,12 @@
 
        <activity
             android:name=".MainActivity"
+            android:enableOnBackInvokedCallback="true"
             android:launchMode="singleTop"
             android:screenOrientation="fullSensor"
             android:theme="@style/SplashTheme"
-            android:exported="true">
+            android:exported="true"
+            tools:targetApi="tiramisu">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -51,6 +53,13 @@
                 android:resource="@xml/app_activity_accessibility_service_config" />
         </service>
 
+        <receiver
+            android:name="com.timejar.app.sensing.user_activity.ActivityRecognitionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.timejar.app.sensing.user_activity.ACTIVITY_RECOGNITION_ACTION" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".map.MapsActivity"
