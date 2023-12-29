@@ -121,4 +121,5 @@
   <string name="todo_work">Don\'t forget to go to the gym</string>
   <string name="todo_home">Should I turn the heating on?</string>
   <string name="todo_fitness">Turn on BT to sync with your smart wristband</string>
+    <string name="accessibility_label">Accessibility</string>
 </resources>

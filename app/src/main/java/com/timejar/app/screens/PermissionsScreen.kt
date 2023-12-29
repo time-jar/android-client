@@ -39,15 +39,24 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import android.Manifest
+import android.content.ComponentName
+import android.content.Intent
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import android.provider.Settings
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalContext
 import com.timejar.app.R
 import com.timejar.app.permissions.PermissionViewModel
 
 class PermissionsScreen {
 
     // AppActivityAccessibilityService
-    //
+
     // val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     //  startActivity(intent)
 }
@@ -65,23 +74,49 @@ fun PermissionScreen(navController: NavController) {
     startActivity(intent)
 
     */
+    val context = LocalContext.current
+
+    val isNotificationPermissionGranted = viewModel.isPermissionGranted(context, Manifest.permission.POST_NOTIFICATIONS)
+    val isLocationPermissionGranted = viewModel.isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION)
+    val isActivityRecognitionPermissionGranted = viewModel.isPermissionGranted(context, Manifest.permission.ACTIVITY_RECOGNITION)
+    val isAccessibilityPermissionGranted = viewModel.isAccessibilityPermissionGranted(context)
+
+    val notificationButtonEnabled = remember { mutableStateOf(!isNotificationPermissionGranted)}
+    val locationButtonEnabled = remember { mutableStateOf(!isLocationPermissionGranted)}
+    val activityRecognitionButtonEnabled = remember { mutableStateOf(!isActivityRecognitionPermissionGranted)}
+    val accessibilityButtonEnabled = remember { mutableStateOf(!isAccessibilityPermissionGranted)}
 
     // Notification permission
     val requestNotificationPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
             viewModel.onNotificationPermissionResult(isGranted)
+            notificationButtonEnabled.value = !isGranted
         }
 
     // Location permission
     val requestLocationPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
             viewModel.onLocationPermissionResult(isGranted)
+            locationButtonEnabled.value = !isGranted
         }
 
     // Activity Recognition permission
     val requestActivityRecognitionPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
             viewModel.onActivityRecognitionPermissionResult(isGranted)
+            activityRecognitionButtonEnabled.value = !isGranted
+        }
+
+    // Accessibility permission
+    val requestAccessibilityPermissionLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+            // Check if the accessibility service is enabled after returning from settings
+            val isServiceEnabled = viewModel.isAccessibilityServiceEnabled(
+                context,
+                ComponentName(context, PermissionsScreen::class.java)
+            )
+            viewModel.onAccessibilityPermissionResult(isServiceEnabled)
+            accessibilityButtonEnabled.value = !isServiceEnabled
         }
 
     Box(
@@ -174,6 +209,7 @@ fun PermissionScreen(navController: NavController) {
                             onClick = {
                                 requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                             },
+                            enabled = notificationButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {
@@ -222,6 +258,7 @@ fun PermissionScreen(navController: NavController) {
                             onClick = {
                                 requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             },
+                            enabled = locationButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {
@@ -230,11 +267,11 @@ fun PermissionScreen(navController: NavController) {
                     }
                 }
 
-                Divider(
-                    color = Color(0xFFABB3BB),
+                HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    color = Color(0xFFABB3BB)
                 )
 
                 Row(
@@ -271,10 +308,58 @@ fun PermissionScreen(navController: NavController) {
                             onClick = {
                                 requestActivityRecognitionPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
                             },
+                            enabled = activityRecognitionButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {
                             Text("Enable")
+                        }
+                    }
+                }
+
+                Divider(
+                    color = Color(0xFFABB3BB),
+                    modifier = Modifier
+                        .height(1.dp)
+                        .fillMaxWidth()
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings Icon",
+                            tint = Color(0xFF91B3B4)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.accessibility_label),
+                            color = Color(0xFFABB3BB),
+                            fontFamily = FontFamily.SansSerif,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            onClick = {
+                                // Start the accessibility settings activity
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                requestAccessibilityPermissionLauncher.launch(intent)
+                            },
+                            enabled = accessibilityButtonEnabled.value,
+                            colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        ) {
+                            Text("Go to Settings")
                         }
                     }
                 }
