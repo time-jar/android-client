@@ -143,7 +143,7 @@ class GeofenceJobIntentService : JobIntentService() {
         val notificationIntent = Intent(applicationContext, MapsActivity::class.java)
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         val notifPendingIntent = PendingIntent.getActivity(
-            this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
         val newNotification = NotificationCompat.Builder(this, CHANNELID)
             .setColor(ContextCompat.getColor(this, R.color.design_default_color_primary))

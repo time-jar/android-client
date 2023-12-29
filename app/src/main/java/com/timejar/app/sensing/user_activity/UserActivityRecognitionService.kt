@@ -23,7 +23,7 @@ class UserActivityRecognitionService(private val context: Context) {
 
     private val pendingIntent: PendingIntent by lazy {
         val intent = Intent(context, ActivityRecognitionReceiver::class.java)
-        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     fun startTracking() {
@@ -36,7 +36,6 @@ class UserActivityRecognitionService(private val context: Context) {
                     Log.e("UserActivityRecognitionService startTracking", "Failed to register")
                 }
         } else {
-            // Handle permission not granted
             Log.e("UserActivityRecognitionService startTracking", "Permissions not granted")
         }
     }
@@ -54,7 +53,6 @@ class UserActivityRecognitionService(private val context: Context) {
             activityCounts.clear()  // Reset activity counts for the next period
             return mostFrequentActivity
         } else {
-            // Handle permission not granted
             Log.e("UserActivityRecognitionService stopTrackingAndReturnMostFrequentActivity", "Permissions not granted")
             return null
         }
@@ -73,9 +71,6 @@ class UserActivityRecognitionService(private val context: Context) {
 
                 val currentCount = activityCounts.getOrDefault(detectedActivity.type, 0)
                 activityCounts[detectedActivity.type] = currentCount + 1
-
-                // Optionally, if you only want one update, stop updates here
-                // stopTrackingAndReturnMostFrequentActivity()
             }
         }
     }

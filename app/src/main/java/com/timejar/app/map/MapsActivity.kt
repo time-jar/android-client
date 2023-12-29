@@ -48,7 +48,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
     private val mGeofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

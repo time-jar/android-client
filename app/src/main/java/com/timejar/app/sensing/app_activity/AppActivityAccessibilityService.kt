@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-val blacklistedApps = listOf<String>("com.google.android.apps.nexuslauncher", "com.android.settings")
+val blacklistedApps = listOf<String>("com.google.android.apps.nexuslauncher", "com.android.settings", "com.android.systemui", "com.google.android.settings.intelligence")
 
 class AppActivityAccessibilityService : AccessibilityService() {
 
@@ -25,34 +25,39 @@ class AppActivityAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            return
+        }
+
         if (!Supabase.isLoggedIn()) {
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
             return
         }
 
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val currentPackageName = event.packageName.toString()
+        val currentPackageName = event.packageName.toString()
+        if (currentPackageName == lastPackageName) {
+            return
+        }
 
-            if (currentPackageName != lastPackageName) {
-                val currentTime = System.currentTimeMillis()
-
-                if (lastPackageName != null) {
-                    // An app was switched or closed
-                    handleAppClosedOrSwitched(lastPackageName!!, currentTime)
-                }
-
-                // A new app was opened
-                if (blacklistedApps.contains(currentPackageName)) {
-                    Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented tracking $currentPackageName")
-                    return
-                }
-
-                handleAppOpened(currentPackageName, currentTime)
-                lastPackageName = currentPackageName
-
-                Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Tracking $currentPackageName")
+        val currentTime = System.currentTimeMillis()
+        if (lastPackageName != null) {
+            if (!blacklistedApps.contains(lastPackageName)) {
+                Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented switch on $currentPackageName with prev $lastPackageName as it was a system app")
+                // An app was switched or closed
+                handleAppClosedOrSwitched(lastPackageName!!, currentTime)
             }
         }
+        if (blacklistedApps.contains(currentPackageName)) {
+            lastPackageName = currentPackageName
+            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented tracking $currentPackageName")
+            return
+        }
+
+        // A new app was opened
+        handleAppOpened(currentPackageName, currentTime)
+        lastPackageName = currentPackageName
+
+        Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Tracking $currentPackageName")
     }
 
     private fun handleAppOpened(packageName: String, eventTime: Long) {
@@ -77,6 +82,8 @@ class AppActivityAccessibilityService : AccessibilityService() {
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
 
             val (shouldBeBlocked, acceptance) = handleUserDecisionNotification(this@AppActivityAccessibilityService)
+
+            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "shouldBeBlocked: $shouldBeBlocked, acceptance: $acceptance")
 
             /*
             Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity!!.type, eventTime, onSuccess = {

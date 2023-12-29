@@ -15,18 +15,22 @@ import android.util.Log
 import com.timejar.app.R
 import kotlinx.coroutines.flow.first
 
-const val CHANNEL_ID = "user_decision_channel"
-const val BLOCK_DECISION_NOTIFICATION_ID = 101
-const val ACCEPTANCE_ACTION_NOTIFICATION_ID = 102
+const val CHANNEL_ID = "50046746765"
+const val BLOCK_DECISION_NOTIFICATION_ID = 50064986
+const val ACCEPTANCE_ACTION_NOTIFICATION_ID = 50046747
+
+data class UserChoices(
+    val blockChoice: Int? = null,
+    val acceptanceChoice: Int? = null
+)
+
 
 fun createUserDecisionNotificationChannel(context: Context) {
-    // Check if the Android version is Oreo (API 26) or higher, as channels are not supported below this version.
-    val channelId = "user_decision_channel"
     val channelName = "User Decision Channel"
     val channelDescription = "Notifications for user decisions"
     val importance = NotificationManager.IMPORTANCE_DEFAULT
 
-    val channel = NotificationChannel(channelId, channelName, importance).apply {
+    val channel = NotificationChannel(CHANNEL_ID, channelName, importance).apply {
         description = channelDescription
     }
 
@@ -38,32 +42,42 @@ fun createUserDecisionNotificationChannel(context: Context) {
 
 class UserDecisionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val blockChoice = intent.getBooleanExtra("BLOCK_CHOICE", false)
-        val acceptanceChoice = intent.getIntExtra("ACCEPTANCE_CHOICE", 1)
+        val blockChoice = intent.getIntExtra("BLOCK_CHOICE", -1)
+        val acceptanceChoice = intent.getIntExtra("ACCEPTANCE_CHOICE", -1)
 
-        UserChoiceHandler.shouldBeBlockedChoiceReceived(blockChoice)
-        UserChoiceHandler.acceptanceChoiceReceived(acceptanceChoice)
+        if (blockChoice != -1) {
+            Log.i("UserDecisionReceiver", "Block choice received: $blockChoice")
+            UserChoiceHandler.choiceReceived(blockChoice = blockChoice)
+            // Cancel the block decision notification
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(BLOCK_DECISION_NOTIFICATION_ID)
+        }
+
+        if (acceptanceChoice != -1) {
+            Log.i("UserDecisionReceiver", "Acceptance choice received: $acceptanceChoice")
+            UserChoiceHandler.choiceReceived(acceptanceChoice = acceptanceChoice)
+            // Cancel the acceptance action notification
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancel(ACCEPTANCE_ACTION_NOTIFICATION_ID)
+        }
     }
 }
 
 object UserChoiceHandler {
-    private val shouldBeBlockedChoiceFlow = MutableSharedFlow<Boolean?>()
-    private val acceptanceChoiceFlow = MutableSharedFlow<Int?>()
+    private val userChoicesFlow = MutableSharedFlow<UserChoices>(replay = 1)
+    private var currentChoices = UserChoices()
 
-    fun shouldBeBlockedChoiceReceived(choice: Boolean?) {
+    fun choiceReceived(blockChoice: Int? = null, acceptanceChoice: Int? = null) {
         CoroutineScope(Dispatchers.Main).launch {
-            shouldBeBlockedChoiceFlow.emit(choice)
+            currentChoices = currentChoices.copy(
+                blockChoice = blockChoice ?: currentChoices.blockChoice,
+                acceptanceChoice = acceptanceChoice ?: currentChoices.acceptanceChoice
+            )
+            userChoicesFlow.emit(currentChoices)
         }
     }
 
-    fun acceptanceChoiceReceived(choice: Int?) {
-        CoroutineScope(Dispatchers.Main).launch {
-            acceptanceChoiceFlow.emit(choice)
-        }
-    }
-
-    suspend fun awaitShouldBeBlockedChoice(): Boolean? = shouldBeBlockedChoiceFlow.first()
-    suspend fun awaitAcceptanceChoice(): Int? = acceptanceChoiceFlow.first()
+    suspend fun awaitUserChoices(): UserChoices = userChoicesFlow.first { it.blockChoice != null && it.acceptanceChoice != null }
 }
 
 
@@ -73,8 +87,9 @@ fun showBlockDecisionNotification(context: Context) {
     // Intents and PendingIntents for block/unblock choices
     val blockIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("BLOCK_CHOICE", 1) } // "block"
     val unblockIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("BLOCK_CHOICE", 0) } // "unblock"
-    val blockPendingIntent = PendingIntent.getBroadcast(context, 0, blockIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-    val unblockPendingIntent = PendingIntent.getBroadcast(context, 1, unblockIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+    val blockPendingIntent = PendingIntent.getBroadcast(context, 10, blockIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    val unblockPendingIntent = PendingIntent.getBroadcast(context, 11, unblockIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
     // Notification for blocking decision
     val blockNotification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -93,16 +108,16 @@ fun showAcceptanceActionNotification(context: Context) {
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     // Create intents for each action
-    val workIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("USER_CHOICE", 1) } // "work"
-    val studyIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("USER_CHOICE", 3) } // "study/learn"
-    val relaxationIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("USER_CHOICE", 2) } // "relaxation/free time"
-    val wasteIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("USER_CHOICE", 4) } // "waste"
+    val workIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 1) } // "work"
+    val studyIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 3) } // "study/learn"
+    val relaxationIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 2) } // "relaxation/free time"
+    val wasteIntent = Intent(context, UserDecisionReceiver::class.java).apply { putExtra("ACCEPTANCE_CHOICE", 4) } // "waste"
 
     // Create PendingIntent for each action
-    val workPendingIntent = PendingIntent.getBroadcast(context, 0, workIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-    val studyPendingIntent = PendingIntent.getBroadcast(context, 1, studyIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-    val relaxationPendingIntent = PendingIntent.getBroadcast(context, 2, relaxationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-    val wastePendingIntent = PendingIntent.getBroadcast(context, 3, wasteIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+    val workPendingIntent = PendingIntent.getBroadcast(context, 20, workIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    val studyPendingIntent = PendingIntent.getBroadcast(context, 21, studyIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    val relaxationPendingIntent = PendingIntent.getBroadcast(context, 22, relaxationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    val wastePendingIntent = PendingIntent.getBroadcast(context, 23, wasteIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
     // Create the notification with acceptance actions
     val acceptanceNotification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -110,8 +125,8 @@ fun showAcceptanceActionNotification(context: Context) {
         .setContentText("Select the category that best describes your recent app usage.")
         .setSmallIcon(R.drawable.acceptance)
         .addAction(0, "Work", workPendingIntent)
-        .addAction(0, "Study/Learn", studyPendingIntent)
-        .addAction(0, "Relaxation", relaxationPendingIntent)
+        .addAction(0, "Study", studyPendingIntent)
+        .addAction(0, "Relax", relaxationPendingIntent)
         .addAction(0, "Waste", wastePendingIntent)
         .setAutoCancel(true)
         .build()
@@ -120,23 +135,17 @@ fun showAcceptanceActionNotification(context: Context) {
 }
 
 
-suspend fun handleUserDecisionNotification(context: Context): Pair<Boolean, Int> {
+suspend fun handleUserDecisionNotification(context: Context): Pair<Int, Int> {
     // Show the notification
     showBlockDecisionNotification(context)
     showAcceptanceActionNotification(context)
 
-    // Default values
-    val defaultBlockChoice = false
-    val defaultAcceptanceChoice = 4
-
-    // Wait for the user's choice and provide default values if null
-    val shouldBeBlocked = UserChoiceHandler.awaitShouldBeBlockedChoice() ?: defaultBlockChoice
-    val acceptance = UserChoiceHandler.awaitAcceptanceChoice() ?: defaultAcceptanceChoice
+    // Wait for the user's choices
+    val (shouldBeBlocked, acceptance) = UserChoiceHandler.awaitUserChoices()
 
     // Log choices
-    Log.d("UserChoice", "User block app: $shouldBeBlocked")
-    Log.d("UserAction", "User action: $acceptance")
+    Log.i("handleUserDecisionNotification", "User block app: $shouldBeBlocked")
+    Log.i("handleUserDecisionNotification", "User action: $acceptance")
 
-    // Return non-nullable values
-    return Pair(shouldBeBlocked, acceptance)
+    return Pair(shouldBeBlocked ?: 0, acceptance ?: 4) // Provide default values if null
 }
