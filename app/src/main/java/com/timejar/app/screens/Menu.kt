@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
+import kotlinx.coroutines.launch
 
 @Composable
 fun Menu(navController: NavController) {
@@ -55,6 +57,8 @@ fun Menu(navController: NavController) {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         }
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -231,16 +235,20 @@ fun Menu(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Button(
-                            onClick = { Supabase.signOut(onSuccess = {
-                                uiToastMessage = "Menu signOut SUCCESS"
+                            onClick = {
+                                coroutineScope.launch {
+                                    Supabase.signOut(onSuccess = {
+                                        uiToastMessage = "Menu signOut SUCCESS"
 
-                                // TODO: redirect to login screen
-                            }, onFailure = {
-                                it.printStackTrace()
-                                val alert = "${it.message}"
-                                Log.e("Menu signOut", alert)
-                                uiToastMessage = alert
-                            }) },
+                                        // TODO: redirect to login screen
+                                    }, onFailure = {
+                                        it.printStackTrace()
+                                        val alert = "${it.message}"
+                                        Log.e("Menu signOut", alert)
+                                        uiToastMessage = alert
+                                    })
+                                }
+                            },
                             shape = RoundedCornerShape(100.dp),
                             colors = ButtonDefaults.buttonColors(Color(0xFFC66161)),
                             modifier = Modifier

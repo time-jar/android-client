@@ -33,6 +33,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
+import kotlinx.coroutines.launch
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -60,49 +61,65 @@ fun SignUpScreen(navController: NavController) {
         }
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     val onSignUpButtonClicked: (String, String, String, String, String, String, String) -> Unit =
-        onSignUpButtonClicked@{ userSex, userFirstName, userLastName, userDateOfBirth, userEmail, userPassword, userConfirmPassword  ->
-            Log.i("LoginScreen", "Sex: $userSex, FirstName: $userFirstName, LastName: $userLastName, Email: $userEmail, Password: $userPassword, Confirm password: $confirmPassword")
+        onSignUpButtonClicked@{ userSex, userFirstName, userLastName, userDateOfBirth, userEmail, userPassword, userConfirmPassword ->
+            Log.i(
+                "LoginScreen",
+                "Sex: $userSex, FirstName: $userFirstName, LastName: $userLastName, Email: $userEmail, Password: $userPassword, Confirm password: $confirmPassword"
+            )
 
             var parsedUserDateOfBirth: Date = Date()
 
-            try {
-                parsedUserDateOfBirth = formatter.parse(userDateOfBirth) ?: throw ParseException("Invalid date format, should be dd.mm.yyyy", 0)
-            } catch (e: ParseException) {
-                val alert = "Please enter the date in dd/MM/yyyy format. ${e.message}"
-                Log.e("SignUpScreen onSignUpButtonClicked", alert)
-                uiToastMessage = alert
+            coroutineScope.launch {
+                try {
+                    parsedUserDateOfBirth = formatter.parse(userDateOfBirth)
+                        ?: throw ParseException("Invalid date format, should be dd.mm.yyyy", 0)
+                } catch (e: ParseException) {
+                    val alert = "Please enter the date in dd/MM/yyyy format. ${e.message}"
+                    Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                    uiToastMessage = alert
 
-                return@onSignUpButtonClicked
+                    return@launch
+                }
+
+                if (userPassword.length < 8) {
+                    val alert = "Password has to be at least 8 characters."
+                    Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                    uiToastMessage = alert
+
+                    return@launch
+                }
+
+                if (userPassword != userConfirmPassword) {
+                    val alert = "Passwords are not the same."
+                    Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                    uiToastMessage = alert
+
+                    return@launch
+                }
+
+                Supabase.signUp(
+                    userSex,
+                    userFirstName,
+                    userLastName,
+                    parsedUserDateOfBirth,
+                    userEmail,
+                    userPassword,
+                    onSuccess = {
+                        uiToastMessage = "SignUpScreen onSignUpButtonClicked SUCCESS"
+
+                        // TODO: redirect to new screen
+                        navController.navigate("login_screen")
+                    },
+                    onFailure = {
+                        it.printStackTrace()
+                        val alert = "${it.message}"
+                        Log.e("SignUpScreen onSignUpButtonClicked", alert)
+                        uiToastMessage = alert
+                    })
             }
-
-            if (userPassword.length < 8) {
-                val alert = "Password has to be at least 8 characters."
-                Log.e("SignUpScreen onSignUpButtonClicked", alert)
-                uiToastMessage = alert
-
-                return@onSignUpButtonClicked
-            }
-
-            if (userPassword != userConfirmPassword) {
-                val alert = "Passwords are not the same."
-                Log.e("SignUpScreen onSignUpButtonClicked", alert)
-                uiToastMessage = alert
-
-                return@onSignUpButtonClicked
-            }
-
-            Supabase.signUp(userSex, userFirstName, userLastName, parsedUserDateOfBirth, userEmail, userPassword, onSuccess = {
-                uiToastMessage = "SignUpScreen onSignUpButtonClicked SUCCESS"
-
-                // TODO: redirect to new screen
-                navController.navigate("login_screen")
-            }, onFailure = {
-                it.printStackTrace()
-                val alert = "${it.message}"
-                Log.e("SignUpScreen onSignUpButtonClicked", alert)
-                uiToastMessage = alert
-            })
         }
 
     Box(modifier = Modifier

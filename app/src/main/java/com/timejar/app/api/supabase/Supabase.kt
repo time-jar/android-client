@@ -18,6 +18,7 @@ import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -102,59 +103,53 @@ class Supabase : Application() {
 
         private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-        fun signUp(sexString: String,  first_name: String, last_name: String, date_of_birth: Date, userEmail: String, userPassword: String,
-                   onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
-            coroutineScope.launch {
-                try {
-                    client.auth.signUpWith(Email) {
-                        email = userEmail
-                        password = userPassword
-                    }
-
-                    val id = client.auth.retrieveUserForCurrentSession().id
-                    val sex = if (sexString.lowercase(Locale.ROOT) === "male") 1 else 2 // male or female
-
-                    val userInfo = User(
-                        id,
-                        first_name,
-                        last_name,
-                        date_of_birth,
-                        sex
-                    )
-                    client.postgrest.from("users").insert(userInfo)
-
-                    onSuccess()
-                } catch (e: Exception) {
-                    onFailure(Exception("SignUp failed: ${e.message}"))
+        suspend fun signUp(sexString: String, first_name: String, last_name: String, date_of_birth: Date, userEmail: String, userPassword: String,
+                           onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) = withContext(Dispatchers.Main.immediate) {
+            try {
+                client.auth.signUpWith(Email) {
+                    email = userEmail
+                    password = userPassword
                 }
+
+                val id = client.auth.retrieveUserForCurrentSession().id
+                val sex = if (sexString.lowercase(Locale.ROOT) === "male") 1 else 2 // male or female
+
+                val userInfo = User(
+                    id,
+                    first_name,
+                    last_name,
+                    date_of_birth,
+                    sex
+                )
+                client.postgrest.from("users").insert(userInfo)
+
+                onSuccess()
+            } catch (e: Exception) {
+                onFailure(Exception("SignUp failed: ${e.message}"))
             }
         }
 
-        fun login(userEmail: String, userPassword: String,
-                  onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
-            coroutineScope.launch {
-                try {
-                    client.auth.signInWith(Email, config = {
-                        email = userEmail
-                        password = userPassword
-                    })
+        suspend fun login(userEmail: String, userPassword: String,
+                  onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) = withContext(Dispatchers.Main.immediate) {
+            try {
+                client.auth.signInWith(Email, config = {
+                    email = userEmail
+                    password = userPassword
+                })
 
-                    onSuccess()
-                } catch (e: Exception) {
-                    onFailure(Exception("login failed: ${e.message}"))
-                }
+                onSuccess()
+            } catch (e: Exception) {
+                onFailure(Exception("login failed: ${e.message}"))
             }
         }
 
-        fun signOut(onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
-            coroutineScope.launch {
-                try {
-                    client.auth.signOut()
+        suspend fun signOut(onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) = withContext(Dispatchers.Main.immediate){
+            try {
+                client.auth.signOut()
 
-                    onSuccess()
-                } catch (e: Exception) {
-                    onFailure(Exception("Sign out failed: ${e.message}"))
-                }
+                onSuccess()
+            } catch (e: Exception) {
+                onFailure(Exception("Sign out failed: ${e.message}"))
             }
         }
 

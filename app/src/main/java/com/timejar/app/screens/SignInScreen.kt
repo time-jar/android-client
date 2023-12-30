@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
@@ -60,6 +61,7 @@ import com.timejar.app.R
 import com.timejar.app.api.supabase.Supabase
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,26 +87,30 @@ fun SignInScreen(navController: NavController) {
         }
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     val onSignInButtonClicked: (String, String) -> Unit = {userEmail, userPassword ->
         Log.i("LoginScreen", "Email: $userEmail, Password: $userPassword")
 
         val isFirstTimeConnected = isFirstTimeConnection(context)
 
-        Supabase.login(userEmail, userPassword, onSuccess = {
-            uiToastMessage = "SignInScreen onSignInButtonClicked SUCCESS"
+        coroutineScope.launch {
+            Supabase.login(userEmail, userPassword, onSuccess = {
+                uiToastMessage = "SignInScreen onSignInButtonClicked SUCCESS"
 
-            if (isFirstTimeConnected) {
-                navController.navigate("location_settings_screen")
-                setLoggedInFlag(context)
-            } else {
-                navController.navigate("menu_screen")
-            }
-        }, onFailure = {
-            it.printStackTrace()
-            val alert = "${it.message}"
-            Log.e("SignInScreen onSignInButtonClicked", alert)
-            uiToastMessage = alert
-        })
+                if (isFirstTimeConnected) {
+                    navController.navigate("location_settings_screen")
+                    setLoggedInFlag(context)
+                } else {
+                    navController.navigate("menu_screen")
+                }
+            }, onFailure = {
+                it.printStackTrace()
+                val alert = "${it.message}"
+                Log.e("SignInScreen onSignInButtonClicked", alert)
+                uiToastMessage = alert
+            })
+        }
     }
 
     val onForgotPasswordButtonClicked: () -> Unit = {}
