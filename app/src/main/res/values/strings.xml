@@ -122,4 +122,6 @@
   <string name="todo_home">Should I turn the heating on?</string>
   <string name="todo_fitness">Turn on BT to sync with your smart wristband</string>
     <string name="accessibility_label">Accessibility</string>
+    <string name="next_label">Next</string>
+    <string name="done_label">Done</string>
 </resources>

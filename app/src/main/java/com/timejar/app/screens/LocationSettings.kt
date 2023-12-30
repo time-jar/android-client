@@ -98,7 +98,7 @@ fun LocationSettings(navController: NavController) {
         ) {
 
 
-            Column (
+/*            Column (
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.fillMaxSize()
             )
@@ -113,7 +113,7 @@ fun LocationSettings(navController: NavController) {
                             navController.navigate("menu_screen")
                         }
                 )
-            }
+            } */
 
             Spacer(modifier = Modifier.height(50.dp))
 
@@ -249,7 +249,9 @@ fun LocationSettings(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { },
+                onClick = {
+                    navController.navigate("menu_screen")
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                 modifier = Modifier

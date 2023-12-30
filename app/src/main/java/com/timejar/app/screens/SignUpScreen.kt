@@ -96,6 +96,7 @@ fun SignUpScreen(navController: NavController) {
                 uiToastMessage = "SignUpScreen onSignUpButtonClicked SUCCESS"
 
                 // TODO: redirect to new screen
+                navController.navigate("login_screen")
             }, onFailure = {
                 it.printStackTrace()
                 val alert = "${it.message}"
@@ -117,7 +118,7 @@ fun SignUpScreen(navController: NavController) {
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
 
-            Column (
+/*            Column (
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.fillMaxSize()
             )
@@ -134,7 +135,7 @@ fun SignUpScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))*/
 
             Image(
                 painter = painterResource(id = R.mipmap.ic_launcher),
@@ -352,7 +353,9 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { onSignUpButtonClicked( sex, firstName.text, lastName.text, dateOfBirth.text, email.text, password.text, confirmPassword.text) },
+                onClick = {
+                    onSignUpButtonClicked( sex, firstName.text, lastName.text, dateOfBirth.text, email.text, password.text, confirmPassword.text)
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                 modifier = Modifier

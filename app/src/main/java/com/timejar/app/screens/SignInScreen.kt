@@ -1,5 +1,7 @@
 package com.timejar.app.screens
 
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -86,10 +88,17 @@ fun SignInScreen(navController: NavController) {
     val onSignInButtonClicked: (String, String) -> Unit = {userEmail, userPassword ->
         Log.i("LoginScreen", "Email: $userEmail, Password: $userPassword")
 
+        val isFirstTimeConnected = isFirstTimeConnection(context)
+
         Supabase.login(userEmail, userPassword, onSuccess = {
             uiToastMessage = "SignInScreen onSignInButtonClicked SUCCESS"
 
-            // TODO: redirect to new screen
+            if (isFirstTimeConnected) {
+                navController.navigate("location_settings_screen")
+                setLoggedInFlag(context)
+            } else {
+                navController.navigate("menu_screen")
+            }
         }, onFailure = {
             it.printStackTrace()
             val alert = "${it.message}"
@@ -112,7 +121,7 @@ fun SignInScreen(navController: NavController) {
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
 
-            Column (
+/*            Column (
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.fillMaxSize()
             )
@@ -129,7 +138,7 @@ fun SignInScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))*/
 
 
             Image(
@@ -239,7 +248,9 @@ fun SignInScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = { onSignInButtonClicked(email.text, password.text) },
+                onClick = {
+                    onSignInButtonClicked(email.text, password.text)
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                 modifier = Modifier
@@ -280,6 +291,22 @@ fun SignInScreen(navController: NavController) {
             }
         }
     }
+}
+
+// Function to check if it's the first time connection
+fun isFirstTimeConnection(context: Context): Boolean {
+    // Use SharedPreferences to store the flag
+    val preferences = context.getSharedPreferences("MyAppPreferences", MODE_PRIVATE)
+
+    // Retrieve the value of the flag, defaulting to true if it doesn't exist
+    return preferences.getBoolean("isFirstTimeConnection", true)
+}
+
+// Function to set the flag indicating that the user has logged in
+fun setLoggedInFlag(context: Context) {
+    // Use SharedPreferences to store the flag
+    val preferences = context.getSharedPreferences("MyAppPreferences", MODE_PRIVATE)
+    preferences.edit().putBoolean("isFirstTimeConnection", false).apply()
 }
 
 @Composable

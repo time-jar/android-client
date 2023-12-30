@@ -45,12 +45,16 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import android.provider.Settings
+import android.util.Log
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import com.timejar.app.R
+import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.permissions.PermissionViewModel
 
 class PermissionsScreen {
@@ -134,7 +138,7 @@ fun PermissionScreen(navController: NavController) {
         ) {
 
 
-            Column(
+/*            Column(
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.fillMaxSize()
             )
@@ -149,7 +153,7 @@ fun PermissionScreen(navController: NavController) {
                             navController.navigate("menu_screen")
                         }
                 )
-            }
+            }*/
 
             Spacer(modifier = Modifier.height(80.dp))
 
@@ -361,6 +365,36 @@ fun PermissionScreen(navController: NavController) {
                         ) {
                             Text("Go to Settings")
                         }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(100.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Button(
+                        onClick = {
+                            if (Supabase.isLoggedIn()) {
+                                navController.navigate("menu_screen")
+                            } else {
+                                navController.navigate("sign_up_screen")
+                            }
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
+                        modifier = Modifier
+                            .height(60.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.done_label),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = 20.sp,
+                            )
+                        )
                     }
                 }
             }
