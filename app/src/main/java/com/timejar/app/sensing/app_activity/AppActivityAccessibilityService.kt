@@ -11,6 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 val minSecondsForApp = 30
+val notSwitchingActivityApps = listOf<String>(
+    "com.android.systemui"
+)
+
+
 val blacklistedApps = listOf<String>(
     "com.google.android.apps.nexuslauncher",
     "com.android.settings",
@@ -46,6 +51,12 @@ class AppActivityAccessibilityService : AccessibilityService() {
             return
         }
 
+        if (notSwitchingActivityApps.contains(currentPackageName)) {
+            // User is checking notifications and not switching apps
+            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "notSwitchingActivityApp $currentPackageName")
+            return
+        }
+
         val currentTime = System.currentTimeMillis()
         if (lastPackageName != null) {
             if (!blacklistedApps.contains(lastPackageName)) {
@@ -54,6 +65,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
                 handleAppClosedOrSwitched(lastPackageName!!, currentTime)
             }
         }
+
         if (blacklistedApps.contains(currentPackageName)) {
             lastPackageName = currentPackageName
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented tracking $currentPackageName")
