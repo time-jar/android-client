@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import androidx.core.app.JobIntentService
@@ -24,8 +23,8 @@ class GeofenceJobIntentService : JobIntentService() {
     companion object {
 
         const val TAG = "GeofenceJobIS"
-        const val JOB_ID = 123
-        const val CHANNELID = "si.uni_lj.fri.lrk.geofencingapp.GEOFENCING_EVENTS"
+        private const val JOB_ID = 123
+        const val CHANNELID = "com.timejar.app.GEOFENCING_EVENTS"
         const val NOTIFICATIONID = 101
 
         fun enqueueWork(context: Context, intent: Intent) {
@@ -47,13 +46,11 @@ class GeofenceJobIntentService : JobIntentService() {
 
         if (geofencingEvent != null) {
             if (geofencingEvent.hasError()) {
-                val errorMessage = geofencingEvent?.let {
+                val errorMessage = geofencingEvent.let {
                     GeofenceStatusCodes
                         .getStatusCodeString(it.errorCode)
                 }
-                if (errorMessage != null) {
-                    Log.d(TAG, errorMessage)
-                }
+                Log.d(TAG, errorMessage)
                 return
             }
         }
@@ -66,7 +63,7 @@ class GeofenceJobIntentService : JobIntentService() {
 
             Log.d(TAG, "geofenceTransition + $geofenceTransition")
 
-            val triggeringGeofences = geofencingEvent?.triggeringGeofences
+            val triggeringGeofences = geofencingEvent.triggeringGeofences
 
             val geofenceTransitionTitle = triggeringGeofences?.let {
                 getGeofenceTitle(geofenceTransition,
@@ -108,13 +105,13 @@ class GeofenceJobIntentService : JobIntentService() {
 
         var todoString = ""
         for (geofence in triggeringGeofences) {
-            if (geofence.requestId.equals(getString(R.string.map_marker_home))) {
+            if (geofence.requestId == getString(R.string.map_marker_home)) {
                 todoString += getString(R.string.todo_home)
             }
-            if (geofence.requestId.equals(getString(R.string.map_marker_work))) {
+            if (geofence.requestId == getString(R.string.map_marker_work)) {
                 todoString += getString(R.string.todo_work)
             }
-            if (geofence.requestId.equals(getString(R.string.map_marker_fitness))) {
+            if (geofence.requestId == getString(R.string.map_marker_fitness)) {
                 todoString += getString(R.string.todo_fitness)
             }
         }
@@ -122,18 +119,16 @@ class GeofenceJobIntentService : JobIntentService() {
     }
 
     private fun createChannel(id: String, name: String, desc: String) {
-        if(Build.VERSION.SDK_INT>=26){
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(id, name, importance)
-            with(channel) {
-                description = desc
-                lightColor = Color.RED
-                enableLights(true)
-            }
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val channel = NotificationChannel(id, name, importance)
+        with(channel) {
+            description = desc
+            lightColor = Color.RED
+            enableLights(true)
+        }
 
-            with(NotificationManagerCompat.from(this)) {
-                createNotificationChannel(channel)
-            }
+        with(NotificationManagerCompat.from(this)) {
+            createNotificationChannel(channel)
         }
     }
 
@@ -152,7 +147,7 @@ class GeofenceJobIntentService : JobIntentService() {
             .setContentText(notificationDetails)
             .setContentIntent(notifPendingIntent)
             .setAutoCancel(true)
-            .build();
+            .build()
 
         with(NotificationManagerCompat.from(this)) {
             notify(NOTIFICATIONID, newNotification)

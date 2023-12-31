@@ -51,6 +51,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
+    @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -124,11 +125,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
                 Log.d(TAG, "Last known location is $latitude , $longitude")
 
-                if (mHome.position?.latitude == 0.0) {
+                if (mHome.position.latitude == 0.0) {
                     mHome.position = LatLng(latitude.get(), longitude.get())
                 }
 
-                if (mWork.position?.latitude == 0.0) {
+                if (mWork.position.latitude == 0.0) {
                     mWork.position = LatLng(latitude.get(), longitude.get() + 0.005)
                 }
 
@@ -145,7 +146,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
         mMap.setOnMarkerDragListener(object: GoogleMap.OnMarkerDragListener{
             override fun onMarkerDragEnd(marker: Marker) {
-                marker?:return
 
                 val lat = marker.position.latitude
                 val lon = marker.position.longitude

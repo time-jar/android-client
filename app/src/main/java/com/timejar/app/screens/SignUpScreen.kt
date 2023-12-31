@@ -111,7 +111,7 @@ fun SignUpScreen(navController: NavController) {
                         uiToastMessage = "SignUpScreen onSignUpButtonClicked SUCCESS"
 
                         // TODO: redirect to new screen
-                        navController.navigate("login_screen")
+                        navController.navigate("menu_screen")
                     },
                     onFailure = {
                         it.printStackTrace()
