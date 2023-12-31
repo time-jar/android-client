@@ -55,7 +55,8 @@
 
         <receiver
             android:name="com.timejar.app.sensing.user_activity.ActivityRecognitionReceiver"
-            android:exported="true">
+            android:exported="false"
+            android:foregroundServiceType="location">
             <intent-filter>
                 <action android:name="com.timejar.app.sensing.user_activity.ACTIVITY_RECOGNITION_ACTION" />
             </intent-filter>
