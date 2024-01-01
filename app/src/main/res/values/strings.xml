@@ -89,6 +89,10 @@
   <string name="events_label">Events</string>
   <string name="location_settings_label">Location Settings</string>
 
+  // BlockedActivity Screen
+  <string name="blocked_message">The app is blocked.</string>
+  <string name="ok">OK</string>
+
   // Geofencing
   <string name="title_activity_maps">Map</string>
   <string name="map_marker_work">Work</string>

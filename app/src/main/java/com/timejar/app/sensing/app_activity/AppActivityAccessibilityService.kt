@@ -1,9 +1,11 @@
 package com.timejar.app.sensing.app_activity
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.timejar.app.api.supabase.Supabase
+import com.timejar.app.screens.BlockedActivityScreen
 import com.timejar.app.sensing.notification.handleUserDecisionNotification
 import com.timejar.app.sensing.user_activity.UserActivityRecognitionService
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +22,8 @@ val blacklistedApps = listOf<String>(
     "com.google.android.apps.nexuslauncher",
     "com.android.settings",
     "com.android.systemui",
-    "com.google.android.settings.intelligence"
+    "com.google.android.settings.intelligence",
+    "com.timejar.app"
 )
 
 class AppActivityAccessibilityService : AccessibilityService() {
@@ -94,6 +97,15 @@ class AppActivityAccessibilityService : AccessibilityService() {
             Log.e("AppActivityAccessibilityService handleAppOpened", "${it.message}")
         })
         */
+
+        if (true) {
+            // Block app
+            val intent = Intent(this@AppActivityAccessibilityService, BlockedActivityScreen::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+
+            return
+        }
     }
 
     private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
