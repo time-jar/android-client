@@ -98,7 +98,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
         })
         */
 
-        if (true) {
+        if (false) {
             // Block app
             val intent = Intent(this@AppActivityAccessibilityService, BlockedActivityScreen::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -110,7 +110,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
     private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
         var timeUsed = eventTime - lastAppOpenTime  // Calculate the duration the app was used
-        timeUsed = timeUsed/1000 // miliseconds to seconds
+        timeUsed /= 1000 // miliseconds to seconds
         if (timeUsed < minSecondsForApp) {
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App $packageName was used for less than $minSecondsForApp seconds (${timeUsed}s).")
             return  // Exit the function early if the app was used for less than 30 seconds
@@ -119,7 +119,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
         CoroutineScope(Dispatchers.Main).launch {
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App closed or switched: $packageName")
             val mostFrequentActivity = activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
-            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "Most Frequent Activity during this period: ${mostFrequentActivity.toString()}")
+            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "Most Frequent Activity during this period: $mostFrequentActivity")
 
             val (shouldBeBlocked, acceptance) = handleUserDecisionNotification(this@AppActivityAccessibilityService)
 

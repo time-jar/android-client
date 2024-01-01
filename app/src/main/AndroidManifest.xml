@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission
+        android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"
+        android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
@@ -58,10 +60,9 @@
 
         <receiver
             android:name="com.timejar.app.sensing.user_activity.ActivityRecognitionReceiver"
-            android:exported="false"
-            android:foregroundServiceType="location">
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.timejar.app.sensing.user_activity.ACTIVITY_RECOGNITION_ACTION" />
+                <action android:name="USER-ACTIVITY-DETECTION-INTENT-ACTION" />
             </intent-filter>
         </receiver>
 
