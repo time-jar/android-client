@@ -66,7 +66,7 @@
         </receiver>
 
         <activity
-            android:name=".map.MapsActivity"
+            android:name="com.timejar.app.sensing.geofence.MapsActivity"
             android:label="Map">
         </activity>
 
@@ -74,11 +74,11 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
-        <receiver android:name=".map.GeofenceBroadcastReceiver"
+        <receiver android:name="com.timejar.app.sensing.geofence.GeofenceBroadcastReceiver"
             android:enabled="true"
             android:exported="false"/>
 
-        <service android:name=".map.GeofenceJobIntentService"
+        <service android:name="com.timejar.app.sensing.geofence.GeofenceJobIntentService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 

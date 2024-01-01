@@ -1,10 +1,9 @@
-package com.timejar.app.transitions
+package com.timejar.app.sensing.activity_recognition.transitions
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.util.Log
 import com.google.android.gms.location.ActivityRecognition
-import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionRequest
 import com.google.android.gms.location.DetectedActivity

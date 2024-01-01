@@ -63,14 +63,6 @@ fun PermissionScreen(navController: NavController) {
 
     val viewModel: PermissionViewModel = viewModel()
 
-    /* TODO: Enable accessibility service
-
-    // Settings -> Accessibility -> [Your Service] and turn it on.
-
-    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-    startActivity(intent)
-
-    */
     val context = LocalContext.current
 
     val isNotificationPermissionGranted = viewModel.isPermissionGranted(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -129,24 +121,6 @@ fun PermissionScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
-
-
-/*            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxSize()
-            )
-            {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu Icon",
-                    tint = Color(0xFFABB3BB),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            navController.navigate("menu_screen")
-                        }
-                )
-            }*/
 
             Spacer(modifier = Modifier.height(80.dp))
 

@@ -1,4 +1,4 @@
-package com.timejar.app.map
+package com.timejar.app.sensing.geofence
 
 import NavGraph
 import android.Manifest
@@ -41,7 +41,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
     private lateinit var mMap: GoogleMap
     private lateinit var mHome: Marker
     private lateinit var mWork: Marker
-    private lateinit var mFitness: Marker
+    private lateinit var mSchool: Marker
 
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var mGeofencingClient: GeofencingClient
@@ -108,12 +108,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
         markerWork.icon(bitmapDescriptorFromVector(this, R.drawable.ic_work_black_24dp))
         mWork = mMap.addMarker(markerWork)!!
 
-        val markerFitness: MarkerOptions = MarkerOptions()
+        val markerSchool: MarkerOptions = MarkerOptions()
             .position(LatLng(latitude.get(), longitude.get() - 0.005))
-            .title(getString(R.string.map_marker_fitness))
+            .title(getString(R.string.map_marker_school))
             .draggable(true)
-        markerFitness.icon(bitmapDescriptorFromVector(this, R.drawable.ic_fitness_black_24dp))
-        mFitness = mMap.addMarker(markerFitness)!!
+        markerSchool.icon(bitmapDescriptorFromVector(this, R.drawable.ic_school_black_24dp))
+        mSchool = mMap.addMarker(markerSchool)!!
 
         mFusedLocationProviderClient.lastLocation.addOnSuccessListener {
 
@@ -133,8 +133,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
                     mWork.position = LatLng(latitude.get(), longitude.get() + 0.005)
                 }
 
-                if (mFitness.position.latitude == 0.0) {
-                    mFitness.position = LatLng(latitude.get(), longitude.get() - 0.005)
+                if (mSchool.position.latitude == 0.0) {
+                    mSchool.position = LatLng(latitude.get(), longitude.get() - 0.005)
                 }
 
                 val cameraPosition = CameraPosition.Builder()
@@ -163,8 +163,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
                             it
                         )
                     }
-                } else if (marker.title.equals(getString(R.string.map_marker_fitness))) {
-                    getGeofencingRequest(getString(R.string.map_marker_fitness), lat, lon)?.let {
+                } else if (marker.title.equals(getString(R.string.map_marker_school))) {
+                    getGeofencingRequest(getString(R.string.map_marker_school), lat, lon)?.let {
                         addGeofence(
                             it
                         )
@@ -192,7 +192,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
             getString(R.string.map_marker_work) ->
                 Geofence.GEOFENCE_TRANSITION_EXIT
 
-            getString(R.string.map_marker_fitness) ->
+            getString(R.string.map_marker_school) ->
                 Geofence.GEOFENCE_TRANSITION_DWELL
 
             else -> {
@@ -203,7 +203,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
         val geofenceRadius = when (markerType) {
             getString(R.string.map_marker_home),
-            getString(R.string.map_marker_fitness) -> 200.0
+            getString(R.string.map_marker_school) -> 200.0
 
             getString(R.string.map_marker_work) -> 300.0
 

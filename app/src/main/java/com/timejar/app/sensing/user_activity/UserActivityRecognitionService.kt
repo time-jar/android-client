@@ -13,7 +13,6 @@ import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.DetectedActivity
 
-
 object ActivityTracker {
     val activityCounts = mutableMapOf<Int, Int>()
 

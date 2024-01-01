@@ -1,4 +1,4 @@
-package com.timejar.app.map
+package com.timejar.app.sensing.geofence
 
 
 import android.content.BroadcastReceiver

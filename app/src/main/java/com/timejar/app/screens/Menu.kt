@@ -239,7 +239,7 @@ fun Menu(navController: NavController) {
                                     Supabase.signOut(onSuccess = {
                                         uiToastMessage = "Menu signOut SUCCESS"
 
-                                        // TODO: redirect to login screen
+                                        navController.navigate("login_screen")
                                     }, onFailure = {
                                         it.printStackTrace()
                                         val alert = "${it.message}"

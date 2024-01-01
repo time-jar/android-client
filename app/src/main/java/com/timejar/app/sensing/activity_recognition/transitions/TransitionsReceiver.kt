@@ -1,4 +1,4 @@
-package com.timejar.app.transitions
+package com.timejar.app.sensing.activity_recognition.transitions
 
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -7,15 +7,15 @@ import android.content.Intent
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionEvent
 import com.google.android.gms.location.ActivityTransitionResult
-import com.timejar.app.SupportedActivity
 import com.timejar.app.BuildConfig
+import com.timejar.app.SupportedActivity
 
 const val TRANSITIONS_RECEIVER_ACTION = "${BuildConfig.APPLICATION_ID}_transitions_receiver_action"
 private const val TRANSITION_PENDING_INTENT_REQUEST_CODE = 200
 
 class TransitionsReceiver: BroadcastReceiver() {
 
-  var action: ((SupportedActivity) -> Unit)? = null
+  private var action: ((SupportedActivity) -> Unit)? = null
 
   companion object {
 

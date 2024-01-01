@@ -92,24 +92,6 @@ fun LocationSettings(navController: NavController) {
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
 
-
-/*            Column (
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxSize()
-            )
-            {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu Icon",
-                    tint = Color(0xFFABB3BB),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            navController.navigate("menu_screen")
-                        }
-                )
-            } */
-
             Spacer(modifier = Modifier.height(50.dp))
 
             Text (

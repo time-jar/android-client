@@ -126,26 +126,6 @@ fun SignInScreen(navController: NavController) {
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
 
-/*            Column (
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxSize()
-            )
-            {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu Icon",
-                    tint = Color(0xFFABB3BB),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            navController.navigate("menu_screen")
-                        }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))*/
-
-
             Image(
                 painter = painterResource(id = R.mipmap.ic_launcher),
                 contentDescription = "Time Jar Logo",
@@ -300,16 +280,13 @@ fun SignInScreen(navController: NavController) {
 
 // Function to check if it's the first time connection
 fun isFirstTimeConnection(context: Context): Boolean {
-    // Use SharedPreferences to store the flag
     val preferences = context.getSharedPreferences("MyAppPreferences", MODE_PRIVATE)
 
-    // Retrieve the value of the flag, defaulting to true if it doesn't exist
     return preferences.getBoolean("isFirstTimeConnection", true)
 }
 
 // Function to set the flag indicating that the user has logged in
 fun setLoggedInFlag(context: Context) {
-    // Use SharedPreferences to store the flag
     val preferences = context.getSharedPreferences("MyAppPreferences", MODE_PRIVATE)
     preferences.edit().putBoolean("isFirstTimeConnection", false).apply()
 }

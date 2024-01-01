@@ -97,8 +97,8 @@
   <string name="title_activity_maps">Map</string>
   <string name="map_marker_work">Work</string>
   <string name="map_marker_home">Home</string>
-  <string name="map_marker_fitness">Fitness</string>
-  <string name="rationale_location">To play with GeofencingLab we need to know your location</string>
+  <string name="map_marker_school">School</string>
+  <string name="rationale_location">To play with Time Jar we need to know your location</string>
 
   <!-- Error strings -->
   <string name="geofence_not_available">Geofence service is not available now</string>
@@ -122,9 +122,9 @@
   <string name="geofence_transition_notification_text">
         Click notification to return to app
     </string>
-  <string name="todo_work">Don\'t forget to go to the gym</string>
-  <string name="todo_home">Should I turn the heating on?</string>
-  <string name="todo_fitness">Turn on BT to sync with your smart wristband</string>
+  <string name="work_quote">What you can do today can improve all of your tomorrows.</string>
+  <string name="home_quote">Relax, you are home.</string>
+  <string name="school_quote">Be the best version of you.</string>
     <string name="accessibility_label">Accessibility</string>
     <string name="next_label">Next</string>
     <string name="done_label">Done</string>

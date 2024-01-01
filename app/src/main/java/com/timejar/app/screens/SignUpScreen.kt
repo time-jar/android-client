@@ -110,7 +110,6 @@ fun SignUpScreen(navController: NavController) {
                     onSuccess = {
                         uiToastMessage = "SignUpScreen onSignUpButtonClicked SUCCESS"
 
-                        // TODO: redirect to new screen
                         navController.navigate("menu_screen")
                     },
                     onFailure = {

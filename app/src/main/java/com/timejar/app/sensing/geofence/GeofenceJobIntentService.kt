@@ -1,4 +1,4 @@
-package com.timejar.app.map
+package com.timejar.app.sensing.geofence
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -106,13 +106,13 @@ class GeofenceJobIntentService : JobIntentService() {
         var todoString = ""
         for (geofence in triggeringGeofences) {
             if (geofence.requestId == getString(R.string.map_marker_home)) {
-                todoString += getString(R.string.todo_home)
+                todoString += getString(R.string.home_quote)
             }
             if (geofence.requestId == getString(R.string.map_marker_work)) {
-                todoString += getString(R.string.todo_work)
+                todoString += getString(R.string.work_quote)
             }
-            if (geofence.requestId == getString(R.string.map_marker_fitness)) {
-                todoString += getString(R.string.todo_fitness)
+            if (geofence.requestId == getString(R.string.map_marker_school)) {
+                todoString += getString(R.string.school_quote)
             }
         }
         return todoString
