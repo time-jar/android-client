@@ -66,7 +66,7 @@ class UserDecisionReceiver : BroadcastReceiver() {
 }
 
 object UserChoiceHandler {
-    private val userChoicesFlow = MutableSharedFlow<UserChoices>(replay = 1)
+    private var userChoicesFlow = MutableSharedFlow<UserChoices>(replay = 1)
     private var currentChoices = UserChoices()
 
     fun choiceReceived(blockChoice: Int? = null, acceptanceChoice: Int? = null) {
@@ -79,9 +79,17 @@ object UserChoiceHandler {
         }
     }
 
-    suspend fun awaitUserChoices(): UserChoices = userChoicesFlow.first { it.blockChoice != null && it.acceptanceChoice != null }
-}
+    suspend fun awaitUserChoices(): UserChoices {
+        val choices = userChoicesFlow.first { it.blockChoice != null && it.acceptanceChoice != null }
+        resetChoices()  // Reset choices after they've been handled
+        return choices
+    }
 
+    private fun resetChoices() {
+        currentChoices = UserChoices()  // Reset the current choices
+        userChoicesFlow = MutableSharedFlow(replay = 1)  // Recreate the SharedFlow
+    }
+}
 
 fun showBlockDecisionNotification(context: Context) {
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

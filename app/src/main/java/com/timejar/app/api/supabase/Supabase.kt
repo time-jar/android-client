@@ -13,8 +13,10 @@ import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,6 +28,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.text.SimpleDateFormat
@@ -55,6 +58,12 @@ data class UserAppUsage(
     val weekday: Int,
     val time_of_day: String,
     val app_usage_time: Long?
+)
+
+@Serializable
+data class ResponseData(
+    val message: String,
+    val shouldBlock: Boolean
 )
 
 object DateSerializer : KSerializer<Date> {
@@ -153,33 +162,40 @@ class Supabase : Application() {
             }
         }
 
-        fun initialAppActivity(packageName: String, eventTime: Long, location: String,
-                               onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
-            coroutineScope.launch {
+        suspend fun initialAppActivity(packageName: String, eventTime: Long, location: Int,
+                                       onSuccess: (shouldBlock: Boolean) -> Unit, onFailure: (Throwable) -> Unit) {
                 try {
                     val user = client.auth.retrieveUserForCurrentSession()
 
-                    client.functions.invoke(
+                    val response = client.functions.invoke(
                         function = "initial-app-activity",
                         body = buildJsonObject {
                             put("userId", user.id)
                             put("packageName", packageName)
                             put("eventTime", eventTime)
-                            put("location", location)
+                            put("locationId", location)
                         },
                         headers = Headers.build {
                             append(HttpHeaders.ContentType, "application/json")
                         }
                     )
 
-                    onSuccess()
+                    if (response.status != HttpStatusCode.OK) {
+                        throw Exception("HttpStatusCode NOT OK: ${response.status}")
+                    }
+
+                    val rawResponse = response.bodyAsText()
+                    val parsedResponse =  Json.decodeFromString<ResponseData>(rawResponse)
+
+                    Log.d("initialAppActivity","parsedResponse: $parsedResponse")
+
+                    onSuccess(parsedResponse.shouldBlock)
                 } catch (e: Exception) {
                     onFailure(Exception("initialAppActivity failed: ${e.message}"))
                 }
-            }
         }
 
-        fun endAppActivity(acceptance: Int, shouldBeBlocked: Boolean, action: Int, eventTime: Long,
+        fun endAppActivity(acceptance: Int, shouldBeBlocked: Int, action: Int, eventTime: Long,
                            onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
             coroutineScope.launch {
                 try {
@@ -190,7 +206,7 @@ class Supabase : Application() {
                         body = buildJsonObject {
                             put("userId", user.id)
                             put("acceptance", acceptance)
-                            put("should_be_blocked", shouldBeBlocked)
+                            put("shouldBeBlocked", shouldBeBlocked)
                             put("action", action)
                             put("eventTime", eventTime)
                         },
