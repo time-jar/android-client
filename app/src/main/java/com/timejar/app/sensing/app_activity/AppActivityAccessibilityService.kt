@@ -10,6 +10,7 @@ import com.timejar.app.sensing.notification.handleUserDecisionNotification
 import com.timejar.app.sensing.user_activity.UserActivityRecognitionService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 val minSecondsForApp = 30
@@ -27,7 +28,7 @@ val blacklistedApps = listOf<String>(
 */
 
 class AppActivityAccessibilityService : AccessibilityService() {
-
+    private var decisionJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     private var lastPackageName: String? = null
@@ -130,7 +131,10 @@ class AppActivityAccessibilityService : AccessibilityService() {
             return  // Exit the function early if the app was used for less than 30 seconds
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
+        // Cancel any existing decision job before starting a new one
+        decisionJob?.cancel()
+
+        decisionJob = CoroutineScope(Dispatchers.Main).launch {
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App closed or switched: $packageName")
             val mostFrequentActivity = activityRecognitionManager!!.stopTrackingAndReturnMostFrequentActivity()
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "Most Frequent Activity during this period: $mostFrequentActivity")
