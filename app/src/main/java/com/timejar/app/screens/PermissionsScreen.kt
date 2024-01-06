@@ -56,6 +56,7 @@ class PermissionsScreen {
 
     // val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     //  startActivity(intent)
+
 }
 
 @Composable
@@ -78,21 +79,18 @@ fun PermissionScreen(navController: NavController) {
     // Notification permission
     val requestNotificationPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
-            viewModel.onNotificationPermissionResult(isGranted)
             notificationButtonEnabled.value = !isGranted
         }
 
     // Location permission
     val requestLocationPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
-            viewModel.onLocationPermissionResult(isGranted)
             locationButtonEnabled.value = !isGranted
         }
 
     // Activity Recognition permission
     val requestActivityRecognitionPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
-            viewModel.onActivityRecognitionPermissionResult(isGranted)
             activityRecognitionButtonEnabled.value = !isGranted
         }
 
@@ -100,12 +98,7 @@ fun PermissionScreen(navController: NavController) {
     val requestAccessibilityPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { _ ->
             // Check if the accessibility service is enabled after returning from settings
-            val isServiceEnabled = viewModel.isAccessibilityServiceEnabled(
-                context,
-                ComponentName(context, PermissionsScreen::class.java)
-            )
-            viewModel.onAccessibilityPermissionResult(isServiceEnabled)
-            accessibilityButtonEnabled.value = !isServiceEnabled
+            accessibilityButtonEnabled.value = isAccessibilityPermissionGranted
         }
 
     Box(
@@ -322,15 +315,14 @@ fun PermissionScreen(navController: NavController) {
                     ) {
                         Button(
                             onClick = {
-                                // Start the accessibility settings activity
-                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                                requestAccessibilityPermissionLauncher.launch(intent)
+                                //viewModel.openAccessibilitySettings(context)
+                                requestAccessibilityPermissionLauncher.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                             },
                             enabled = accessibilityButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(Color(0xFF91B3B4)),
                             modifier = Modifier.padding(horizontal = 5.dp)
                         ) {
-                            Text("Go to Settings")
+                            Text("Enable")
                         }
                     }
                 }
