@@ -26,10 +26,4 @@ class PermissionViewModel : ViewModel() {
 
         return enabledServicesSetting?.contains(context.packageName) == true
     }
-
-    fun openAccessibilitySettings(context: Context) {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        context.startActivity(intent)
-    }
-
 }
