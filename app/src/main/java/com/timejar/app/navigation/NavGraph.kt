@@ -10,7 +10,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.screens.EventScreen
-import com.timejar.app.screens.LocationSettings
 import com.timejar.app.screens.SignInScreen
 import com.timejar.app.screens.Menu
 import com.timejar.app.screens.PermissionScreen
@@ -38,9 +37,6 @@ fun NavGraph(){
         }
         composable("sign_up_screen"){
             SignUpScreen(navController = navController)
-        }
-        composable("location_settings_screen"){
-            LocationSettings(navController = navController)
         }
         composable("map_screen") {
             MapScreen(navController = navController)

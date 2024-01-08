@@ -98,7 +98,7 @@ fun SignInScreen(navController: NavController) {
                 uiToastMessage = "SignInScreen onSignInButtonClicked SUCCESS"
 
                 if (isFirstTimeConnected) {
-                    navController.navigate("location_settings_screen")
+                    navController.navigate("map_screen")
                     setLoggedInFlag(context)
                 } else {
                     navController.navigate("menu_screen")
