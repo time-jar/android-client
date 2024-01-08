@@ -138,6 +138,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
         timeUsed /= 1000 // miliseconds to seconds
         if (timeUsed < minSecondsForApp) {
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App $packageName was used for less than $minSecondsForApp seconds (${timeUsed}s).")
+            activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
             return  // Exit the function early if the app was used for less than 30 seconds
         }
 
