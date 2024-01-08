@@ -13,9 +13,9 @@ Note: Don't install it on a phone that does not have Google Play Services.
     To enable it:
 
     - Go to app info.
-    - Tap on 3 dots.
-    - Choose "allow restricted settings".
-    - You'll asked for you lock code.
+    - Tap on 3 dots (top-right).
+    - Choose `allow restricted settings`.
+    - You will be asked for you lock code or fingerprint.
 
     Now you can enable accessibility.
 
