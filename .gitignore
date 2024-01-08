@@ -47,3 +47,5 @@ captures/
 
 # Encrypted variables/secrets
 secrets.properties
+
+app/debug
