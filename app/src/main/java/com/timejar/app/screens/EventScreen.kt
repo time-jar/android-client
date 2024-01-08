@@ -40,10 +40,10 @@ import com.timejar.app.api.supabase.UserAppUsage
 
 @Composable
 fun EventScreen(navController: NavController) {
-    val scrollState = rememberScrollState()
+    // val scrollState = rememberScrollState()
 
-    var numberOfEvents = 99
-    var selectedRow by remember { mutableStateOf(-1) }
+    val numberOfEvents = 99
+    // var selectedRow by remember { mutableStateOf(-1) }
     var userAppUsageList by remember { mutableStateOf(emptyList<UserAppUsage>()) }
 
     val temp = UserAppUsage(
@@ -66,7 +66,8 @@ fun EventScreen(navController: NavController) {
         onSuccess = { data: List<UserAppUsage> ->
             userAppUsageList = data
         },
-        onFailure = { error ->
+        onFailure = {
+            it.printStackTrace()
             // Handle the error
         }
     )

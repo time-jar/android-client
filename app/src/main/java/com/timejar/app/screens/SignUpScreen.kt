@@ -70,7 +70,7 @@ fun SignUpScreen(navController: NavController) {
                 "Sex: $userSex, FirstName: $userFirstName, LastName: $userLastName, Email: $userEmail, Password: $userPassword, Confirm password: $confirmPassword"
             )
 
-            var parsedUserDateOfBirth: Date = Date()
+            var parsedUserDateOfBirth: Date
 
             coroutineScope.launch {
                 try {

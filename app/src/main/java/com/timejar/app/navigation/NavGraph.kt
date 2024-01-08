@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.api.supabase.Supabase
-import com.timejar.app.screens.EventScreen
 import com.timejar.app.screens.SignInScreen
 import com.timejar.app.screens.Menu
 import com.timejar.app.screens.PermissionScreen
@@ -39,14 +38,14 @@ fun NavGraph(){
             SignUpScreen(navController = navController)
         }
         composable("map_screen") {
-            MapScreen(navController = navController)
+            MapScreen()
         }
         composable("permissions_screen"){
             PermissionScreen(navController = navController)
         }
-        composable("event_screen"){
-            EventScreen(navController = navController)
-        }
+        // composable("event_screen"){  // Disabled, since we are not using it
+        //    EventScreen(navController = navController)
+        // }
         composable("menu_screen"){
             Menu(navController = navController)
         }

@@ -131,6 +131,7 @@ fun Menu(navController: NavController) {
                     )
                 }
 
+                /* // Disabled, since we are not using it
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(20.dp)
@@ -148,6 +149,7 @@ fun Menu(navController: NavController) {
                             }
                     )
                 }
+                */
 
                 HorizontalDivider(
                     modifier = Modifier
