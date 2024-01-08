@@ -20,3 +20,5 @@ Note: If you install it on a phone that does not have Google Play Services, we w
     Now you can enable accessibility.
 
 3. Proceed as per the guide on the screen.
+
+4. If you are using Xiaomi, or other brands phone that is know to kill background apps, please disable battery optimization for this app.
