@@ -4,14 +4,18 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.timejar.app.MainActivity
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.screens.BlockedActivityScreen
+import com.timejar.app.sensing.geofence.GeofenceJobIntentService
+import com.timejar.app.sensing.geofence.MapsActivity
 import com.timejar.app.sensing.notification.handleUserDecisionNotification
 import com.timejar.app.sensing.user_activity.UserActivityRecognitionService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.serialization.descriptors.StructureKind
 
 val minSecondsForApp = 30
 val notSwitchingActivityApps = listOf<String>(
@@ -37,11 +41,15 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
     private lateinit var blacklistedApps: List<String>
 
+    private var mapsActivity: MapsActivity? = null
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         activityRecognitionManager = UserActivityRecognitionService(this)
 
         blacklistedApps = getBlacklistedApps(this)
+
+        mapsActivity = MapsActivity()
 
         Log.i("AppActivityAccessibilityService onServiceConnected", "SUCCESS")
     }
@@ -98,7 +106,9 @@ class AppActivityAccessibilityService : AccessibilityService() {
         Log.i("AppActivityAccessibilityService handleAppOpened", "App opened: $packageName")
         activityRecognitionManager?.startTracking()
 
-        val location = 1
+        val location = GeofenceJobIntentService.getCurrentPlace()
+
+        Log.i("AppActivityAccessibilityService handleAppOpened", "Location: $location")
 
         var shouldBlock = false
 

@@ -48,7 +48,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
     private val mGeofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
     }
 
     @SuppressLint("InflateParams")
@@ -86,7 +86,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
         sortPermissions()
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "PotentialBehaviorOverride")
     private fun whenMapReady() {
 
         val latitude: AtomicReference<Double>  =  AtomicReference(0.0)
@@ -125,6 +125,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
                 Log.d(TAG, "Last known location is $latitude , $longitude")
 
+                // Load saved marker positions from SharedPreferences
+                val prefs = getPreferences(Context.MODE_PRIVATE)
+                val homeLat = prefs.getFloat("homeLat", 0.0f).toDouble()
+                val homeLon = prefs.getFloat("homeLon", 0.0f).toDouble()
+                val workLat = prefs.getFloat("workLat", 0.0f).toDouble()
+                val workLon = prefs.getFloat("workLon", 0.0f).toDouble()
+                val schoolLat = prefs.getFloat("schoolLat", 0.0f).toDouble()
+                val schoolLon = prefs.getFloat("schoolLon", 0.0f).toDouble()
+
+                // Update marker positions if saved positions are not default (0.0)
+                if (homeLat != 0.0 && homeLon != 0.0) mHome.position = LatLng(homeLat, homeLon)
+                if (workLat != 0.0 && workLon != 0.0) mWork.position = LatLng(workLat, workLon)
+                if (schoolLat != 0.0 && schoolLon != 0.0) mSchool.position = LatLng(schoolLat, schoolLon)
+
                 if (mHome.position.latitude == 0.0) {
                     mHome.position = LatLng(latitude.get(), longitude.get())
                 }
@@ -149,7 +163,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
                 val lat = marker.position.latitude
                 val lon = marker.position.longitude
-
 
                 if (marker.title.equals(getString(R.string.map_marker_home))) {
                     getGeofencingRequest(getString(R.string.map_marker_home), lat, lon)?.let {
@@ -179,6 +192,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        // Save marker positions to SharedPreferences only if they are not default (0.0)
+        val prefs = getPreferences(Context.MODE_PRIVATE)
+        with(prefs.edit()) {
+            if (mHome.position.latitude != 0.0 && mHome.position.longitude != 0.0) {
+                putFloat("homeLat", mHome.position.latitude.toFloat())
+                putFloat("homeLon", mHome.position.longitude.toFloat())
+            }
+            if (mWork.position.latitude != 0.0 && mWork.position.longitude != 0.0) {
+                putFloat("workLat", mWork.position.latitude.toFloat())
+                putFloat("workLon", mWork.position.longitude.toFloat())
+            }
+            if (mSchool.position.latitude != 0.0 && mSchool.position.longitude != 0.0) {
+                putFloat("schoolLat", mSchool.position.latitude.toFloat())
+                putFloat("schoolLon", mSchool.position.longitude.toFloat())
+            }
+            apply()
+        }
+    }
 
     private fun getGeofencingRequest(
         markerType: String,
@@ -196,19 +230,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
                 Geofence.GEOFENCE_TRANSITION_DWELL
 
             else -> {
-                // Handle other cases or return null if the marker type is not recognized
                 return null
             }
         }
 
         val geofenceRadius = when (markerType) {
-            getString(R.string.map_marker_home),
-            getString(R.string.map_marker_school) -> 200.0
-
+            getString(R.string.map_marker_home) -> 200.0
+            getString(R.string.map_marker_school),
             getString(R.string.map_marker_work) -> 300.0
 
             else -> {
-                // Handle other cases or return null if the marker type is not recognized
                 return null
             }
         }

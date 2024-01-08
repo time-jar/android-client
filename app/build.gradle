@@ -20,8 +20,7 @@ android {
         secretsProperties.load(new FileInputStream(secretsPropertiesFile))
         buildConfigField('String', 'SUPABASE_URL', "\"${secretsProperties['SUPABASE_URL']}\"")
         buildConfigField('String', 'SUPABASE_KEY', "\"${secretsProperties['SUPABASE_KEY']}\"")
-        buildConfigField('String', 'PLACES_API_KEY', "\"${secretsProperties['PLACES_API_KEY']}\"")
-        buildConfigField('String', 'GOOGLE_MAPS_API_KEY', "\"${secretsProperties['GOOGLE_MAPS_API_KEY']}\"")
+        buildConfigField('String', 'MAPS_API_KEY', "\"${secretsProperties['MAPS_API_KEY']}\"")
     }
 
     compileOptions {
@@ -67,6 +66,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.google.android.libraries.places:places:3.3.0'
+    implementation 'com.google.android.libraries.mapsplatform.transportation:transportation-consumer:2.0.0'
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -91,6 +91,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'pub.devrel:easypermissions:3.0.0'
+    implementation 'com.google.maps.android:android-maps-utils:0.6.2'
 
     // Supabase
     implementation platform('io.github.jan-tennert.supabase:bom:2.0.2')

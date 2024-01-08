@@ -30,6 +30,28 @@ class GeofenceJobIntentService : JobIntentService() {
         fun enqueueWork(context: Context, intent: Intent) {
             enqueueWork(context, GeofenceJobIntentService::class.java, JOB_ID, intent)
         }
+
+        private var currentGeofencingEvent: GeofencingEvent? = null
+
+        fun setCurrentGeofencingEvent(geofencingEvent: GeofencingEvent) {
+            currentGeofencingEvent = geofencingEvent
+        }
+
+        fun getCurrentPlace(): Int {
+            val triggeringGeofences = currentGeofencingEvent?.triggeringGeofences
+
+            if (!triggeringGeofences.isNullOrEmpty()) {
+                for (geofence in triggeringGeofences) {
+                    when (geofence.requestId) {
+                        "Home" -> return 4
+                        "Work" -> return 2
+                        "School" -> return 3
+                    }
+                }
+            }
+            return 1
+        }
+
     }
 
     override fun onCreate() {
@@ -43,6 +65,7 @@ class GeofenceJobIntentService : JobIntentService() {
         Log.d(TAG, "onHandleWork")
 
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
+        setCurrentGeofencingEvent(geofencingEvent!!)
 
         if (geofencingEvent != null) {
             if (geofencingEvent.hasError()) {
@@ -63,7 +86,7 @@ class GeofenceJobIntentService : JobIntentService() {
 
             Log.d(TAG, "geofenceTransition + $geofenceTransition")
 
-            val triggeringGeofences = geofencingEvent.triggeringGeofences
+            val triggeringGeofences = geofencingEvent.triggeringGeofences!!
 
             val geofenceTransitionTitle = triggeringGeofences?.let {
                 getGeofenceTitle(geofenceTransition,
@@ -153,4 +176,5 @@ class GeofenceJobIntentService : JobIntentService() {
             notify(NOTIFICATIONID, newNotification)
         }
     }
+
 }
