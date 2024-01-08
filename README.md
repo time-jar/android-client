@@ -8,6 +8,14 @@ To decrypt variables/secrets, run:
 make decrypt
 ```
 
+Builds are [here](app/build/outputs/apk/debug/).
+
+Run the following to prepare it for publishing:
+
+```sh
+app/build/outputs/apk/debug/
+```
+
 Some images were gathered from [Flaticon](https://www.flaticon.com).
 
 ## Docs
