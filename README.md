@@ -3,7 +3,7 @@
 To decrypt variables/secrets, run:
 
 ```sh
-export SOPS_AGE_KEY=AGE-SECRET-KEY-159XZAZYC8CZ0YDNCFUCFJ2R7NNGJQA0UL9YHQ6PGJY0YACULW2WS7LRG5X
+export SOPS_AGE_KEY=...
 
 make decrypt
 ```
