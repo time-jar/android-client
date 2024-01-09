@@ -26,7 +26,7 @@ fun NavGraph(){
     val startDestination = when {
         isFirstLaunch -> "permissions_screen"
         Supabase.isLoggedIn() -> "menu_screen"
-        else -> "menu_screen"
+        else -> "login_screen"
     }
     NavHost(
         navController = navController,
