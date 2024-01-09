@@ -58,12 +58,6 @@ class AppActivityAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (!Supabase.isLoggedIn()) {
-            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
-            Toast.makeText(this, "Please log in to use Time-Jar", Toast.LENGTH_LONG).show()
-            return
-        }
-
         val currentPackageName = event.packageName.toString()
         if (currentPackageName == lastPackageName) {
             return
@@ -72,6 +66,12 @@ class AppActivityAccessibilityService : AccessibilityService() {
         if (containsStringOrPrefix(nonSwitchingApps, currentPackageName)) {
             // User is checking notifications and not switching apps
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "notSwitchingActivityApp $currentPackageName")
+            return
+        }
+
+        if (!Supabase.isLoggedIn()) {
+            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
+            Toast.makeText(this, "Please log in to use Time-Jar", Toast.LENGTH_LONG).show()
             return
         }
 
