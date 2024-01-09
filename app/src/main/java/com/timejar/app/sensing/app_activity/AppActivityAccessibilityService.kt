@@ -40,6 +40,17 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
     private var mapsActivity: MapsActivity? = null
 
+    private var lastToastTime: Long = 0
+
+    private fun showToastIfAllowed() {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastToastTime > 30_000) { // 30 seconds
+            lastToastTime = currentTime
+            Toast.makeText(this, "Please log in to use Time-Jar", Toast.LENGTH_LONG).show()
+        }
+    }
+
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         activityRecognitionManager = UserActivityRecognitionService(this)
@@ -71,7 +82,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
         if (!Supabase.isLoggedIn()) {
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
-            Toast.makeText(this, "Please log in to use Time-Jar", Toast.LENGTH_LONG).show()
+            showToastIfAllowed()
             return
         }
 
