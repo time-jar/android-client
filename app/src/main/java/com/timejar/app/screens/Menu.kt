@@ -149,14 +149,14 @@ fun Menu(navController: NavController) {
                             }
                     )
                 }
-                */
+
 
                 HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
                         .fillMaxWidth(),
                     color = Color(0xFFABB3BB)
-                )
+                )*/
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -171,7 +171,7 @@ fun Menu(navController: NavController) {
                         fontSize = 16.sp,
                         modifier = Modifier.padding(horizontal = 20.dp)
                             .clickable {
-                                navController.navigate("map_screen")
+                                navController.navigate("help_screen")
                             }
                     )
                 }

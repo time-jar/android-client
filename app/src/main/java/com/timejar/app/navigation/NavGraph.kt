@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.timejar.app.api.supabase.Supabase
+import com.timejar.app.screens.HelpMapScreen
 import com.timejar.app.screens.SignInScreen
 import com.timejar.app.screens.Menu
 import com.timejar.app.screens.PermissionScreen
@@ -25,7 +26,7 @@ fun NavGraph(){
     val startDestination = when {
         isFirstLaunch -> "permissions_screen"
         Supabase.isLoggedIn() -> "menu_screen"
-        else -> "login_screen"
+        else -> "menu_screen"
     }
     NavHost(
         navController = navController,
@@ -39,6 +40,9 @@ fun NavGraph(){
         }
         composable("map_screen") {
             MapScreen()
+        }
+        composable("help_screen"){
+            HelpMapScreen(navController = navController)
         }
         composable("permissions_screen"){
             PermissionScreen(navController = navController)
