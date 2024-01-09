@@ -1,31 +1,49 @@
 package com.timejar.app.screens
 
 import android.util.Log
+import android.view.KeyEvent.ACTION_DOWN
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,9 +54,12 @@ import com.timejar.app.api.supabase.Supabase
 import kotlinx.coroutines.launch
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController) {
     val context = LocalContext.current
@@ -51,9 +72,20 @@ fun SignUpScreen(navController: NavController) {
     var dateOfBirth by remember { mutableStateOf(TextFieldValue("")) }
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
+    var passwordVisible by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf(TextFieldValue("")) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    val formatter = SimpleDateFormat("dd.mm.yyyy", Locale.ENGLISH);
+    val calendar = Calendar.getInstance()
+    calendar.set(1990, 1, 22)
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = calendar.timeInMillis)
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableLongStateOf(calendar.timeInMillis) }
+    val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
+
+    val focusManager = LocalFocusManager.current
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(uiToastMessage) {
         uiToastMessage?.let {
@@ -77,7 +109,7 @@ fun SignUpScreen(navController: NavController) {
                     parsedUserDateOfBirth = formatter.parse(userDateOfBirth)
                         ?: throw ParseException("Invalid date format, should be dd.mm.yyyy", 0)
                 } catch (e: ParseException) {
-                    val alert = "Please enter the date in dd/MM/yyyy format. ${e.message}"
+                    val alert = "Please enter the date in dd.MM.yyyy format. ${e.message}"
                     Log.e("SignUpScreen onSignUpButtonClicked", alert)
                     uiToastMessage = alert
 
@@ -124,6 +156,8 @@ fun SignUpScreen(navController: NavController) {
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color(0xFFE5E5E5))
+        .imePadding()
+
     ) {
 
         Column(
@@ -156,7 +190,8 @@ fun SignUpScreen(navController: NavController) {
             Image(
                 painter = painterResource(id = R.mipmap.ic_launcher),
                 contentDescription = "Time Jar Logo",
-                modifier = Modifier.padding(vertical = 24.dp)
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
                     .size(100.dp)
             )
 
@@ -229,7 +264,20 @@ fun SignUpScreen(navController: NavController) {
                         tint = Color(0xFF91B3B4)
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Tab && it.nativeKeyEvent.action == ACTION_DOWN) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -256,14 +304,58 @@ fun SignUpScreen(navController: NavController) {
                         tint = Color(0xFF91B3B4)
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Tab && it.nativeKeyEvent.action == ACTION_DOWN) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
             )
 
             Spacer(modifier = Modifier.height(2.dp))
 
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = {
+                        showDatePicker = false
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDatePicker = false
+                            selectedDate = datePickerState.selectedDateMillis!!
+                            dateOfBirth = TextFieldValue(
+                                text = SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(Date(selectedDate))
+                            )
+                        }) {
+                            Text(text = "Confirm")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showDatePicker = false
+                        }) {
+                            Text(text = "Cancel")
+                        }
+                    }
+                ) {
+                    DatePicker(
+                        state = datePickerState
+                    )
+                }
+
+            }
+
             OutlinedTextField(
                 value = dateOfBirth,
-                onValueChange = { dateOfBirth = it },
+                onValueChange = { SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(Date(selectedDate)) },
                 label = {
                     Text(
                         text = stringResource(id = R.string.date_of_birth_label), // in "dd.mm.yyyy" format
@@ -283,7 +375,32 @@ fun SignUpScreen(navController: NavController) {
                         tint = Color(0xFF91B3B4)
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            showDatePicker = true
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange, contentDescription = "Date Picker",
+                            tint = Color(0xFFABB3BB)
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Tab && it.nativeKeyEvent.action == ACTION_DOWN) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -310,7 +427,20 @@ fun SignUpScreen(navController: NavController) {
                         tint = Color(0xFF91B3B4)
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Tab && it.nativeKeyEvent.action == ACTION_DOWN) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -323,7 +453,8 @@ fun SignUpScreen(navController: NavController) {
                         text = stringResource(id = R.string.label_password),
                         color = Color(0xFFABB3BB)
                     )
-                },                placeholder = { Text(text = stringResource(id = R.string.hint_enter_password)) },
+                },
+                placeholder = { Text(text = stringResource(id = R.string.hint_enter_password)) },
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF91B3B4),
@@ -336,7 +467,35 @@ fun SignUpScreen(navController: NavController) {
                         tint = Color(0xFF91B3B4)
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    val description = if (passwordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = {passwordVisible = !passwordVisible}){
+                        Icon(
+                            imageVector  = image, description,
+                            tint = Color(0xFFABB3BB)
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Tab && it.nativeKeyEvent.action == ACTION_DOWN) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -363,6 +522,25 @@ fun SignUpScreen(navController: NavController) {
                         tint = Color(0xFF91B3B4)
                     )
                 },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (confirmPasswordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    val description = if (confirmPasswordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = {confirmPasswordVisible = !confirmPasswordVisible}){
+                        Icon(
+                            imageVector  = image, description,
+                            tint = Color(0xFFABB3BB)
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { keyboardController?.hide() }
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -392,15 +570,18 @@ fun SignUpScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical=24.dp)
+                    .padding(vertical = 24.dp)
 
             ) {
+
                 Text(
                     text = stringResource(id = R.string.already_have_account),
                     color = Color(0xFFABB3BB),
                     fontSize = 12.sp
                 )
+
                 Spacer(modifier = Modifier.width(5.dp))
+
                 Text(
                     text = stringResource(id = R.string.sign_in),
                     color = Color(0xFF91B3B4),
