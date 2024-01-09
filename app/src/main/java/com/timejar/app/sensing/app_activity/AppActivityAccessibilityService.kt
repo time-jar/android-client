@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.widget.Toast
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.screens.BlockedActivityScreen
 import com.timejar.app.sensing.geofence.GeofenceJobIntentService
@@ -42,6 +43,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         activityRecognitionManager = UserActivityRecognitionService(this)
+        createNotificationChannel(this)
 
         nonSwitchingApps = getNonSwitchingApps(this)
         blacklistedApps = getBlacklistedApps(this)
@@ -58,6 +60,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
         if (!Supabase.isLoggedIn()) {
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
+            Toast.makeText(this, "Please log in to use Time-Jar", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -154,9 +157,15 @@ class AppActivityAccessibilityService : AccessibilityService() {
             // send to Supabase
             Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity, eventTime, onSuccess = {
                 Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "end-app-activity SUCCESS")
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@AppActivityAccessibilityService, "Feedback successfully submitted", Toast.LENGTH_LONG).show()
+                }
             }, onFailure = {
                 it.printStackTrace()
                 Log.e("AppActivityAccessibilityService handleAppClosedOrSwitched", "${it.message}")
+                CoroutineScope(Dispatchers.Main).launch {
+                    showNotification(this@AppActivityAccessibilityService, "Time-Jar error", "Error when submitting your feedback: ${it.message}")
+                }
             })
         }
     }
