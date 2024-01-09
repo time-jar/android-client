@@ -4,7 +4,6 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import com.timejar.app.MainActivity
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.screens.BlockedActivityScreen
 import com.timejar.app.sensing.geofence.GeofenceJobIntentService
@@ -15,12 +14,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.serialization.descriptors.StructureKind
 
 val minSecondsForApp = 30
-val notSwitchingActivityApps = listOf<String>(
-    "com.android.systemui"
-)
 
 /*
 val blacklistedApps = listOf<String>(
@@ -40,6 +35,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
     private var activityRecognitionManager: UserActivityRecognitionService? = null
 
     private lateinit var blacklistedApps: List<String>
+    private lateinit var nonSwitchingApps: List<String>
 
     private var mapsActivity: MapsActivity? = null
 
@@ -47,6 +43,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         activityRecognitionManager = UserActivityRecognitionService(this)
 
+        nonSwitchingApps = getNonSwitchingApps(this)
         blacklistedApps = getBlacklistedApps(this)
 
         mapsActivity = MapsActivity()
@@ -69,7 +66,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (containsStringOrPrefix(notSwitchingActivityApps, currentPackageName)) {
+        if (containsStringOrPrefix(nonSwitchingApps, currentPackageName)) {
             // User is checking notifications and not switching apps
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "notSwitchingActivityApp $currentPackageName")
             return

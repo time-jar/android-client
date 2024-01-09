@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.util.Log
+import android.view.inputmethod.InputMethodInfo
+import android.view.inputmethod.InputMethodManager
 import java.util.Date
 
 fun getBlacklistedApps(context: Context): List<String> {
@@ -53,4 +55,26 @@ fun getLauncherApps(packageManager: PackageManager): List<String> {
     }
     val resolveInfos = packageManager.queryIntentActivities(intent, 0)
     return resolveInfos.mapNotNull { it.activityInfo?.packageName }
+}
+
+
+fun getNonSwitchingApps(context: Context): List<String> {
+    val nonSwitchingApps = mutableListOf<String>(
+        "com.android.systemui"
+    )
+
+    nonSwitchingApps += getInstalledKeyboardApps(context)
+
+    val nonSwitchingAppsFiltered = nonSwitchingApps.distinct() // Remove duplicates
+
+    Log.d("getNonSwitchingApps", nonSwitchingAppsFiltered.toString())
+
+    return nonSwitchingAppsFiltered
+}
+
+fun getInstalledKeyboardApps(context: Context): List<String> {
+    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val inputMethods = inputMethodManager.inputMethodList
+
+    return inputMethods.map(InputMethodInfo::getPackageName)
 }
