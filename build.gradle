@@ -2,7 +2,7 @@
 
 buildscript {
   ext {
-    kotlin_version = '1.9.21' // Ensure this is the latest and matches your Kotlin plugin
+    kotlin_version = '1.9.22' // Ensure this is the latest and matches your Kotlin plugin
     compileSdkVersion = 34
     targetSdkVersion = compileSdkVersion
     minSdkVersion = 26

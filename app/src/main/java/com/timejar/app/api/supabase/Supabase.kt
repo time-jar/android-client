@@ -123,12 +123,15 @@ class Supabase : Application() {
             if (currentTime - lastRefreshSession > 30 * 60 * 1000) { // 30 minutes
                 lastRefreshSession = currentTime
 
+                var sessionStatus = client.auth.sessionStatus.value
+                Log.d("isLoggedIn", "sessionStatus: $sessionStatus")
+
                 CoroutineScope(Dispatchers.Main).launch {
                     val result = client.auth.refreshCurrentSession()
                     Log.d("isLoggedIn", "refreshing sessionStatus result: ${result.toString()}")
                 }
 
-                val sessionStatus = client.auth.sessionStatus.value
+                sessionStatus = client.auth.sessionStatus.value
                 Log.d("isLoggedIn after refresh", "sessionStatus: $sessionStatus")
             }
         }
@@ -245,9 +248,6 @@ class Supabase : Application() {
 
         fun isLoggedIn(): Boolean {
             val user = client.auth.currentUserOrNull()
-
-            val sessionStatus = client.auth.sessionStatus.value
-            Log.d("isLoggedIn", "sessionStatus: $sessionStatus")
 
             refreshSessionIfAllowed()
 
