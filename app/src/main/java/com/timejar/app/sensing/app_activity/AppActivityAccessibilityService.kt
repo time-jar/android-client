@@ -130,6 +130,9 @@ class AppActivityAccessibilityService : AccessibilityService() {
         }, onFailure = {
             it.printStackTrace()
             Log.e("AppActivityAccessibilityService handleAppOpened", "${it.message}")
+            CoroutineScope(Dispatchers.Main).launch {
+                showNotification(this@AppActivityAccessibilityService, "Time-Jar error", "Error when submitting initial app activity: ${it.message}")
+            }
         })
 
         Log.i("AppActivityAccessibilityService handleAppOpened", "initial-app-activity shouldBlock: $shouldBlock")
@@ -164,6 +167,11 @@ class AppActivityAccessibilityService : AccessibilityService() {
             val (shouldBeBlocked, acceptance) = handleUserDecisionNotification(this@AppActivityAccessibilityService)
 
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "shouldBeBlocked: $shouldBeBlocked, acceptance: $acceptance")
+
+            if (!Supabase.isLoggedIn()) {
+                Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "not logged in")
+                return@launch
+            }
 
             // send to Supabase
             Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity, eventTime, onSuccess = {

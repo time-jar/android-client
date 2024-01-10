@@ -2,12 +2,15 @@ package com.timejar.app.api.supabase
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import com.timejar.app.BuildConfig
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.functions.functions
+import io.github.jan.supabase.gotrue.AuthConfig
+import io.github.jan.supabase.gotrue.SessionStatus
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
@@ -19,6 +22,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
@@ -111,6 +115,23 @@ class Supabase : Application() {
             private set
 
         private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+        private var lastRefreshSession: Long = 0
+
+        private fun refreshSessionIfAllowed() {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastRefreshSession > 30 * 60 * 1000) { // 30 minutes
+                lastRefreshSession = currentTime
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    val result = client.auth.refreshCurrentSession()
+                    Log.d("isLoggedIn", "refreshing sessionStatus result: ${result.toString()}")
+                }
+
+                val sessionStatus = client.auth.sessionStatus.value
+                Log.d("isLoggedIn after refresh", "sessionStatus: $sessionStatus")
+            }
+        }
 
         suspend fun signUp(sexString: String, first_name: String, last_name: String, date_of_birth: Date, userEmail: String, userPassword: String,
                            onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) = withContext(Dispatchers.Main.immediate) {
@@ -224,6 +245,12 @@ class Supabase : Application() {
 
         fun isLoggedIn(): Boolean {
             val user = client.auth.currentUserOrNull()
+
+            val sessionStatus = client.auth.sessionStatus.value
+            Log.d("isLoggedIn", "sessionStatus: $sessionStatus")
+
+            refreshSessionIfAllowed()
+
             return user != null
         }
     }

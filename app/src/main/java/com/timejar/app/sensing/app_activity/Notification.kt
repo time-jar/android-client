@@ -1,5 +1,6 @@
 package com.timejar.app.sensing.app_activity
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -22,11 +23,13 @@ fun createNotificationChannel(context: Context) {
         notificationManager.createNotificationChannel(channel)
 }
 
+@SuppressLint("PrivateResource")
 fun showNotification(context: Context, title: String, content: String) {
     val notificationBuilder = NotificationCompat.Builder(context, notificationChannel).apply {
         setSmallIcon(com.google.android.material.R.drawable.mtrl_ic_error)
         setContentTitle(title)
         setContentText(content)
+        setStyle(NotificationCompat.BigTextStyle().bigText(content)) // Use BigTextStyle for longer content
         priority = NotificationCompat.PRIORITY_DEFAULT
     }
 
