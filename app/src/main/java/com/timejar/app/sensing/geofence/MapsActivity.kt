@@ -48,7 +48,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
 
     private val mGeofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
     }
 
     @SuppressLint("InflateParams")
@@ -221,13 +221,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
     ): GeofencingRequest? {
         val geofenceTransition = when (markerType) {
             getString(R.string.map_marker_home) ->
-                Geofence.GEOFENCE_TRANSITION_ENTER
+                Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
 
             getString(R.string.map_marker_work) ->
-                Geofence.GEOFENCE_TRANSITION_EXIT
+                Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
 
             getString(R.string.map_marker_school) ->
-                Geofence.GEOFENCE_TRANSITION_DWELL
+                Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
 
             else -> {
                 return null
@@ -235,9 +235,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
         }
 
         val geofenceRadius = when (markerType) {
-            getString(R.string.map_marker_home) -> 200.0
-            getString(R.string.map_marker_school),
-            getString(R.string.map_marker_work) -> 300.0
+            getString(R.string.map_marker_home) -> 300
+            getString(R.string.map_marker_school) -> 300
+            getString(R.string.map_marker_work) -> 300
 
             else -> {
                 return null
@@ -245,14 +245,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
         }
 
         val geofence = Geofence.Builder()
-            .setRequestId(markerType) // Use marker type as the geofence request ID
+            .setRequestId(markerType)
             .setCircularRegion(latitude, longitude, geofenceRadius.toFloat())
             .setTransitionTypes(geofenceTransition)
-            .apply {
-                if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL) {
-                    setLoiteringDelay(1000)
-                }
-            }
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .build()
 

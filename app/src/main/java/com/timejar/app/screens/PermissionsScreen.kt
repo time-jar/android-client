@@ -339,7 +339,7 @@ fun PermissionScreen(navController: NavController) {
                             if (Supabase.isLoggedIn()) {
                                 navController.navigate("menu_screen")
                             } else {
-                                navController.navigate("sign_up_screen")
+                                navController.navigate("login_screen")
                             }
                         },
                         shape = RoundedCornerShape(8.dp),
