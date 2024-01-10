@@ -28,6 +28,7 @@ fun NavGraph(){
         Supabase.isLoggedIn() -> "menu_screen"
         else -> "login_screen"
     }
+
     NavHost(
         navController = navController,
         startDestination = startDestination)

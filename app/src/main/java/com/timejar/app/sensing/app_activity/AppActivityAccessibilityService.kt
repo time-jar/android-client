@@ -80,12 +80,6 @@ class AppActivityAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (!Supabase.isLoggedIn()) {
-            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
-            showToastIfAllowed()
-            return
-        }
-
         val currentTime = System.currentTimeMillis()
         if (lastPackageName != null) {
             if (!containsStringOrPrefix(blacklistedApps, lastPackageName!!)) {
@@ -101,14 +95,20 @@ class AppActivityAccessibilityService : AccessibilityService() {
             return
         }
 
-        // A new app was opened
-        coroutineScope.launch {
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!Supabase.isLoggedInWithRefresh()) {
+                Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
+                showToastIfAllowed()
+                return@launch
+            }
+
+            // A new app was opened
             handleAppOpened(currentPackageName, currentTime)
+
+            lastPackageName = currentPackageName
+
+            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Tracking $currentPackageName")
         }
-
-        lastPackageName = currentPackageName
-
-        Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Tracking $currentPackageName")
     }
 
     private suspend fun handleAppOpened(packageName: String, eventTime: Long) {
@@ -168,7 +168,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
             Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "shouldBeBlocked: $shouldBeBlocked, acceptance: $acceptance")
 
-            if (!Supabase.isLoggedIn()) {
+            if (!Supabase.isLoggedInWithRefresh()) {
                 Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "not logged in")
                 return@launch
             }

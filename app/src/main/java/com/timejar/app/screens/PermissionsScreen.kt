@@ -35,7 +35,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import android.Manifest
-import android.content.ComponentName
 import android.content.Intent
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
