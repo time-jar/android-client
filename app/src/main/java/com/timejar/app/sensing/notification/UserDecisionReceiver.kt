@@ -14,17 +14,21 @@ import kotlinx.coroutines.launch
 import android.util.Log
 import com.timejar.app.R
 import kotlinx.coroutines.flow.first
+import java.util.UUID
 
-const val CHANNEL_ID = "50046746765"
-const val BLOCK_DECISION_NOTIFICATION_ID = 50064986
-const val ACCEPTANCE_ACTION_1_NOTIFICATION_ID = 50046747
-const val ACCEPTANCE_ACTION_2_NOTIFICATION_ID = 50046748
 
 data class UserChoices(
     val blockChoice: Int? = null,
     val acceptanceChoice: Int? = null
 )
 
+fun generateChannelId(): String {
+    return "channel_${UUID.randomUUID()}"
+}
+
+fun generateNotificationId(): Int {
+    return UUID.randomUUID().hashCode() // Convert UUID to an integer for the notification ID
+}
 
 fun createUserDecisionNotificationChannel(context: Context) {
     val channelName = "User Decision Channel"

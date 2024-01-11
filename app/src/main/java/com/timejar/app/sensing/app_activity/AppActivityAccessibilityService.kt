@@ -7,16 +7,10 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.screens.BlockedActivityScreen
-import com.timejar.app.sensing.geofence.GeofenceJobIntentService
 import com.timejar.app.sensing.geofence.MapsActivity
-import com.timejar.app.sensing.notification.handleUserDecisionNotification
-import com.timejar.app.sensing.user_activity.UserActivityRecognitionService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-
-val minSecondsForApp = 30
 
 /*
 val blacklistedApps = listOf<String>(
@@ -28,12 +22,9 @@ val blacklistedApps = listOf<String>(
 */
 
 class AppActivityAccessibilityService : AccessibilityService() {
-    private var decisionJob: Job? = null
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val appSessions = mutableMapOf<String, AppSessionHandler>()
 
     private var lastPackageName: String? = null
-    private var lastAppOpenTime: Long = 0
-    private var activityRecognitionManager: UserActivityRecognitionService? = null
 
     private lateinit var blacklistedApps: List<String>
     private lateinit var nonSwitchingApps: List<String>
@@ -50,10 +41,8 @@ class AppActivityAccessibilityService : AccessibilityService() {
         }
     }
 
-
     override fun onServiceConnected() {
         super.onServiceConnected()
-        activityRecognitionManager = UserActivityRecognitionService(this)
         createNotificationChannel(this)
 
         nonSwitchingApps = getNonSwitchingApps(this)
@@ -75,17 +64,16 @@ class AppActivityAccessibilityService : AccessibilityService() {
         }
 
         if (containsStringOrPrefix(nonSwitchingApps, currentPackageName)) {
-            // User is checking notifications and not switching apps
+            // User is checking notifications or writing using keyboard, not switching apps
             Log.i("AppActivityAccessibilityService onAccessibilityEvent", "notSwitchingActivityApp $currentPackageName")
             return
         }
 
-        val currentTime = System.currentTimeMillis()
         if (lastPackageName != null) {
             if (!containsStringOrPrefix(blacklistedApps, lastPackageName!!)) {
                 Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented switch on $currentPackageName with prev $lastPackageName as it was a system app")
                 // An app was switched or closed
-                handleAppClosedOrSwitched(lastPackageName!!, currentTime)
+                handleAppClosed(lastPackageName)
             }
         }
 
@@ -103,41 +91,34 @@ class AppActivityAccessibilityService : AccessibilityService() {
             }
 
             // A new app was opened
-            handleAppOpened(currentPackageName, currentTime)
-
-            lastPackageName = currentPackageName
-
-            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Tracking $currentPackageName")
+            handleAppOpened(currentPackageName)
         }
     }
 
-    private suspend fun handleAppOpened(packageName: String, eventTime: Long) {
-        lastAppOpenTime = eventTime  // Record the time the app was opened
-
-        Log.i("AppActivityAccessibilityService handleAppOpened", "App opened: $packageName")
-        activityRecognitionManager?.startTracking()
-
-        val location = GeofenceJobIntentService.getCurrentPlace()
-
-        Log.i("AppActivityAccessibilityService handleAppOpened", "Location: $location")
+    private suspend fun handleAppOpened(packageName: String) {
+        val handler = AppSessionHandler(this)
+        appSessions[packageName] = handler
+        val supabaseData = handler.startSession(packageName)
 
         var shouldBlock = false
 
         // send to Supabase
-        Supabase.initialAppActivity(packageName, eventTime, location, onSuccess = {
+        Supabase.predict(packageName, supabaseData.locationId, supabaseData.startTime, onSuccess = {
             shouldBlock = it
-            Log.i("AppActivityAccessibilityService handleAppOpened", "initial-app-activity SUCCESS")
+            Log.i("AppActivityAccessibilityService", "handleAppOpened predict SUCCESS")
         }, onFailure = {
             it.printStackTrace()
-            Log.e("AppActivityAccessibilityService handleAppOpened", "${it.message}")
+            Log.e("AppActivityAccessibilityService", "handleAppOpened error: ${it.message}")
             CoroutineScope(Dispatchers.Main).launch {
-                showNotification(this@AppActivityAccessibilityService, "Time-Jar error", "Error when submitting initial app activity: ${it.message}")
+                showNotification(this@AppActivityAccessibilityService, "Time-Jar error", "Error when requesting prediction: ${it.message}")
             }
         })
 
-        Log.i("AppActivityAccessibilityService handleAppOpened", "initial-app-activity shouldBlock: $shouldBlock")
+        Log.i("AppActivityAccessibilityService", "handleAppOpened shouldBlock: $shouldBlock")
 
         if (shouldBlock) {
+            handleAppClosed(packageName)
+
             // Block app
             val intent = Intent(this@AppActivityAccessibilityService, BlockedActivityScreen::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -145,48 +126,13 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
             return
         }
+
+        lastPackageName = packageName
     }
 
-    private fun handleAppClosedOrSwitched(packageName: String, eventTime: Long) {
-        var timeUsed = eventTime - lastAppOpenTime  // Calculate the duration the app was used
-        timeUsed /= 1000 // miliseconds to seconds
-        if (timeUsed < minSecondsForApp) {
-            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App $packageName was used for less than $minSecondsForApp seconds (${timeUsed}s).")
-            activityRecognitionManager?.stopTrackingAndReturnMostFrequentActivity()
-            return  // Exit the function early if the app was used for less than 30 seconds
-        }
-
-        // Cancel any existing decision job before starting a new one
-        decisionJob?.cancel()
-
-        decisionJob = CoroutineScope(Dispatchers.Main).launch {
-            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "App closed or switched: $packageName")
-            val mostFrequentActivity = activityRecognitionManager!!.stopTrackingAndReturnMostFrequentActivity()
-            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "Most Frequent Activity during this period: $mostFrequentActivity")
-
-            val (shouldBeBlocked, acceptance) = handleUserDecisionNotification(this@AppActivityAccessibilityService)
-
-            Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "shouldBeBlocked: $shouldBeBlocked, acceptance: $acceptance")
-
-            if (!Supabase.isLoggedInWithRefresh()) {
-                Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "not logged in")
-                return@launch
-            }
-
-            // send to Supabase
-            Supabase.endAppActivity(acceptance, shouldBeBlocked, mostFrequentActivity, eventTime, onSuccess = {
-                Log.i("AppActivityAccessibilityService handleAppClosedOrSwitched", "end-app-activity SUCCESS")
-                CoroutineScope(Dispatchers.Main).launch {
-                    Toast.makeText(this@AppActivityAccessibilityService, "Feedback successfully submitted", Toast.LENGTH_LONG).show()
-                }
-            }, onFailure = {
-                it.printStackTrace()
-                Log.e("AppActivityAccessibilityService handleAppClosedOrSwitched", "${it.message}")
-                CoroutineScope(Dispatchers.Main).launch {
-                    showNotification(this@AppActivityAccessibilityService, "Time-Jar error", "Error when submitting your feedback: ${it.message}")
-                }
-            })
-        }
+    private fun handleAppClosed(packageName: String?) {
+        appSessions[packageName]?.endSession()
+        appSessions.remove(packageName)
     }
 
     override fun onInterrupt() {

@@ -180,7 +180,7 @@ class Supabase : Application() {
             }
         }
 
-        suspend fun initialAppActivity(packageName: String, eventTime: Long, location: Int,
+        suspend fun predict(packageName: String, locationId: Int, startTime: Long,
                                        onSuccess: (shouldBlock: Boolean) -> Unit, onFailure: (Throwable) -> Unit) {
                 try {
                     val user = client.auth.retrieveUserForCurrentSession()
@@ -190,8 +190,8 @@ class Supabase : Application() {
                         body = buildJsonObject {
                             put("userId", user.id)
                             put("packageName", packageName)
-                            put("eventTime", eventTime)
-                            put("locationId", location)
+                            put("locationId", locationId)
+                            put("startTime", startTime)
                         },
                         headers = Headers.build {
                             append(HttpHeaders.ContentType, "application/json")
@@ -205,28 +205,31 @@ class Supabase : Application() {
                     val rawResponse = response.bodyAsText()
                     val parsedResponse =  Json.decodeFromString<ResponseData>(rawResponse)
 
-                    Log.d("initialAppActivity","parsedResponse: $parsedResponse")
+                    Log.d("predict","parsedResponse: $parsedResponse")
 
                     onSuccess(parsedResponse.shouldBlock)
                 } catch (e: Exception) {
-                    onFailure(Exception("initialAppActivity failed: ${e.message}"))
+                    onFailure(Exception("predict failed: ${e.message}"))
                 }
         }
 
-        fun endAppActivity(acceptance: Int, shouldBeBlocked: Int, action: Int, eventTime: Long,
+        fun reportActivity(packageName: String, acceptanceId: Int, shouldBeBlocked: Int, actionId: Int, appUsageTime: Long, locationId: Int, startTime: Long,
                            onSuccess: () -> Unit, onFailure: (Throwable) -> Unit) {
             coroutineScope.launch {
                 try {
                     val user = client.auth.retrieveUserForCurrentSession()
 
                     client.functions.invoke(
-                        function = "end-app-activity",
+                        function = "report-activity",
                         body = buildJsonObject {
                             put("userId", user.id)
-                            put("acceptance", acceptance)
+                            put("packageName", packageName)
+                            put("acceptanceId", acceptanceId)
                             put("shouldBeBlocked", shouldBeBlocked)
-                            put("action", action)
-                            put("eventTime", eventTime)
+                            put("actionId", actionId)
+                            put("appUsageTime", appUsageTime)
+                            put("locationId", locationId)
+                            put("startTime", startTime)
                         },
                         headers = Headers.build {
                             append(HttpHeaders.ContentType, "application/json")
@@ -235,7 +238,7 @@ class Supabase : Application() {
 
                     onSuccess()
                 } catch (e: Exception) {
-                    onFailure(Exception("endAppActivity failed: ${e.message}"))
+                    onFailure(Exception("reportActivity failed: ${e.message}"))
                 }
             }
         }
