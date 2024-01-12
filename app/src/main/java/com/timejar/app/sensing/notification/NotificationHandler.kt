@@ -5,18 +5,23 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.os.bundleOf
 import com.timejar.app.R
 import java.util.UUID
+import android.content.BroadcastReceiver
+import android.content.Context.RECEIVER_NOT_EXPORTED
+import android.content.IntentFilter
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 data class NotificationIds(
     val channelId: String,
     val blockDecisionNotificationId: Int,
     val acceptanceActionNotificationId_1: Int,
-    val acceptanceActionNotificationId_2: Int
+    val acceptanceActionNotificationId_2: Int,
+    val blockDecisionAction: String,
+    val acceptanceAction: String
 )
 
 class NotificationHandler(private val context: Context, private val appName: String) {
@@ -27,7 +32,9 @@ class NotificationHandler(private val context: Context, private val appName: Str
         generateChannelId(),
         generateNotificationId(),
         generateNotificationId(),
-        generateNotificationId()
+        generateNotificationId(),
+        generateUniqueAction(),
+        generateUniqueAction()
     )
 
     init {
@@ -53,22 +60,16 @@ class NotificationHandler(private val context: Context, private val appName: Str
         }
 
         // Register the channel with the system
-        val notificationManager: NotificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
 
 
     private fun showBlockDecisionNotification() {
         // Intents and PendingIntents for block/unblock choices
-        val blockIntent = Intent(context, UserDecisionReceiver::class.java).apply {
-            putExtra("BLOCK_CHOICE", 1)
-            putExtras(getNotificationIdsIntentExtras())
-        } // "block"
-        val unblockIntent = Intent(context, UserDecisionReceiver::class.java).apply {
-            putExtra("BLOCK_CHOICE", 0)
-            putExtras(getNotificationIdsIntentExtras())
-        } // "unblock"
+        val blockIntent = Intent(notificationIds.blockDecisionAction).apply {putExtra("BLOCK_CHOICE", 1) } // "block"
+        val unblockIntent = Intent(notificationIds.blockDecisionAction).apply {putExtra("BLOCK_CHOICE", 0) } // "unblock"
+        blockIntent.setPackage(context.packageName) // required for RECEIVER_NOT_EXPORTED to make it work
+        unblockIntent.setPackage(context.packageName) // required for RECEIVER_NOT_EXPORTED to make it work
 
         val blockPendingIntent = PendingIntent.getBroadcast(context, 10, blockIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val unblockPendingIntent = PendingIntent.getBroadcast(context, 11, unblockIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
@@ -84,22 +85,33 @@ class NotificationHandler(private val context: Context, private val appName: Str
             .build()
 
         notificationManager.notify(notificationIds.blockDecisionNotificationId, blockNotification)
+
+        // Register receiver
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val blockChoice = intent.getIntExtra("BLOCK_CHOICE", -1)
+
+                Log.i("UserDecisionReceiver", "Block choice received: $blockChoice")
+                UserChoiceHandler.choiceReceived(blockChoice, null, notificationIds.blockDecisionNotificationId, notificationIds.acceptanceActionNotificationId_1, notificationIds.acceptanceActionNotificationId_2)
+                // Cancel the block decision notification
+                notificationManager.cancel(notificationIds.blockDecisionNotificationId)
+
+                // Unregister this receiver
+                context.unregisterReceiver(this)
+            }
+        }
+
+        context.registerReceiver(receiver, IntentFilter(notificationIds.blockDecisionAction), RECEIVER_NOT_EXPORTED)
     }
 
     private fun showAcceptanceActionNotification() {
         // Create intents for each action
-        val workIntent = Intent(context, UserDecisionReceiver::class.java).apply {
-            putExtra("ACCEPTANCE_CHOICE", 1)
-            putExtras(getNotificationIdsIntentExtras())
-        } // "work"
-        val studyIntent = Intent(context, UserDecisionReceiver::class.java).apply {
-            putExtra("ACCEPTANCE_CHOICE", 3)
-            putExtras(getNotificationIdsIntentExtras())
-        } // "study/learn"
-        val relaxationIntent = Intent(context, UserDecisionReceiver::class.java).apply {
-            putExtra("ACCEPTANCE_CHOICE", 2)
-            putExtras(getNotificationIdsIntentExtras())
-        } // "relaxation/free time"
+        val workIntent = Intent(notificationIds.acceptanceAction).apply { putExtra("ACCEPTANCE_CHOICE", 1) } // "work"
+        val studyIntent = Intent(notificationIds.acceptanceAction).apply {putExtra("ACCEPTANCE_CHOICE", 3) } // "study/learn"
+        val relaxationIntent = Intent(notificationIds.acceptanceAction).apply {putExtra("ACCEPTANCE_CHOICE", 2) } // "relaxation/free time"
+        workIntent.setPackage(context.packageName) // required for RECEIVER_NOT_EXPORTED to make it work
+        studyIntent.setPackage(context.packageName) // required for RECEIVER_NOT_EXPORTED to make it work
+        relaxationIntent.setPackage(context.packageName) // required for RECEIVER_NOT_EXPORTED to make it work
 
         // Create PendingIntent for each action
         val workPendingIntent = PendingIntent.getBroadcast(context, 20, workIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
@@ -118,14 +130,30 @@ class NotificationHandler(private val context: Context, private val appName: Str
             .build()
 
         notificationManager.notify(notificationIds.acceptanceActionNotificationId_1, acceptanceNotification)
+
+        // Register receiver
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val acceptanceChoice = intent.getIntExtra("ACCEPTANCE_CHOICE", -1)
+
+                Log.i("UserDecisionReceiver", "Acceptance choice received: $acceptanceChoice")
+                UserChoiceHandler.choiceReceived(null, acceptanceChoice, notificationIds.blockDecisionNotificationId, notificationIds.acceptanceActionNotificationId_1, notificationIds.acceptanceActionNotificationId_2)
+                // Cancel the acceptance action notification
+                notificationManager.cancel(notificationIds.acceptanceActionNotificationId_1)
+                notificationManager.cancel(notificationIds.acceptanceActionNotificationId_2)
+
+                // Unregister this receiver
+                context.unregisterReceiver(this)
+            }
+        }
+
+        context.registerReceiver(receiver, IntentFilter(notificationIds.acceptanceAction), RECEIVER_NOT_EXPORTED)
     }
 
     private fun showWasteChoiceNotification() {
         // Intent and PendingIntent for the "Waste" choice
-        val wasteIntent = Intent(context, UserDecisionReceiver::class.java).apply {
-            putExtra("ACCEPTANCE_CHOICE", 4)
-            putExtras(getNotificationIdsIntentExtras())
-        } // "waste"
+        val wasteIntent = Intent(notificationIds.acceptanceAction).apply {putExtra("ACCEPTANCE_CHOICE", 4) } // "waste"
+        wasteIntent.setPackage(context.packageName) // required for RECEIVER_NOT_EXPORTED to make it work
 
         val wastePendingIntent = PendingIntent.getBroadcast(context, 23, wasteIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -138,16 +166,6 @@ class NotificationHandler(private val context: Context, private val appName: Str
             .build()
 
         notificationManager.notify(notificationIds.acceptanceActionNotificationId_2, wasteNotification)
-    }
-
-    // Method to pass the NotificationIds to the UserDecisionReceiver
-    private fun getNotificationIdsIntentExtras(): Bundle {
-        return bundleOf(
-            "CHANNEL_ID" to notificationIds.channelId,
-            "BLOCK_DECISION_ID" to notificationIds.blockDecisionNotificationId,
-            "ACCEPTANCE_ACTION_1_ID" to notificationIds.acceptanceActionNotificationId_1,
-            "ACCEPTANCE_ACTION_2_ID" to notificationIds.acceptanceActionNotificationId_2
-        )
     }
 
     suspend fun handleUserDecisionNotification(): Pair<Int, Int> {
