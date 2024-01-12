@@ -5,7 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import com.timejar.app.api.supabase.Supabase
 import com.timejar.app.sensing.geofence.GeofenceJobIntentService
-import com.timejar.app.sensing.notification.handleUserDecisionNotification
+import com.timejar.app.sensing.notification.NotificationHandler
 import com.timejar.app.sensing.screen_handler.ScreenStateHandler
 import com.timejar.app.sensing.screen_handler.ScreenStateListener
 import com.timejar.app.sensing.user_activity.UserActivityRecognitionService
@@ -64,6 +64,8 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
     override fun suspendSession() {
         supabaseData.appUsageTime = System.currentTimeMillis() - lastCheckpoint
         lastCheckpoint = 0
+
+        Log.d("AppSessionHandler", "Suspended session on ${supabaseData.packageName}")
     }
 
     override fun continueSession() {
@@ -73,6 +75,7 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
         }
 
         lastCheckpoint = System.currentTimeMillis()
+        Log.d("AppSessionHandler", "Continuing session on ${supabaseData.packageName}")
     }
 
     private suspend fun handleSessionEnd() {
@@ -90,7 +93,8 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
             val actionId = activityRecognitionManager!!.stopTrackingAndReturnMostFrequentActivity()
             Log.i("AppSessionHandler", "handleSessionEnd: Most Frequent Activity during this period: $actionId")
 
-            val (shouldBeBlocked, acceptanceId) = handleUserDecisionNotification(context)
+            val notificationHandler = NotificationHandler(context)
+            val (shouldBeBlocked, acceptanceId) = notificationHandler.handleUserDecisionNotification()
 
             Log.i("AppSessionHandler", "handleSessionEnd: shouldBeBlocked: $shouldBeBlocked, acceptance: $acceptanceId")
 

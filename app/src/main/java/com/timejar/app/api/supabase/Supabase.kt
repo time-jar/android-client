@@ -219,7 +219,7 @@ class Supabase : Application() {
                 try {
                     val user = client.auth.retrieveUserForCurrentSession()
 
-                    client.functions.invoke(
+                    val response = client.functions.invoke(
                         function = "report-activity",
                         body = buildJsonObject {
                             put("userId", user.id)
@@ -235,6 +235,10 @@ class Supabase : Application() {
                             append(HttpHeaders.ContentType, "application/json")
                         }
                     )
+
+                    if (response.status != HttpStatusCode.OK) {
+                        throw Exception("HttpStatusCode NOT OK: ${response.status}")
+                    }
 
                     onSuccess()
                 } catch (e: Exception) {
