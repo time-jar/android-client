@@ -1,7 +1,9 @@
 package com.timejar.app.sensing.app_activity
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
@@ -50,7 +52,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
         mapsActivity = MapsActivity()
 
-        Log.i("AppActivityAccessibilityService onServiceConnected", "SUCCESS")
+        Log.i("AppActivityAccessibilityService", "onServiceConnected: SUCCESS")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
@@ -65,34 +67,37 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
         if (containsStringOrPrefix(nonSwitchingApps, currentPackageName)) {
             // User is checking notifications or writing using keyboard, not switching apps
-            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "notSwitchingActivityApp $currentPackageName")
+            Log.i("AppActivityAccessibilityService", "onAccessibilityEvent: notSwitchingActivityApp $currentPackageName")
             return
         }
 
         if (lastPackageName != null) {
             if (!containsStringOrPrefix(blacklistedApps, lastPackageName!!)) {
-                Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented switch on $currentPackageName with prev $lastPackageName as it was a system app")
+                Log.i("AppActivityAccessibilityService", "onAccessibilityEvent: Prevented switch on $currentPackageName with prev $lastPackageName as it was a system app")
                 // An app was switched or closed
                 handleAppClosed(lastPackageName)
+                Log.i("AppActivityAccessibilityService", "appSessions after handleAppClosed: $appSessions")
             }
         }
 
         if (containsStringOrPrefix(blacklistedApps, currentPackageName)) {
             lastPackageName = currentPackageName
-            Log.i("AppActivityAccessibilityService onAccessibilityEvent", "Prevented tracking $currentPackageName")
+            Log.i("AppActivityAccessibilityService", "onAccessibilityEvent: Prevented tracking $currentPackageName")
             return
         }
 
         CoroutineScope(Dispatchers.Main).launch {
             if (!Supabase.isLoggedInWithRefresh()) {
-                Log.i("AppActivityAccessibilityService onAccessibilityEvent", "not logged in")
+                Log.i("AppActivityAccessibilityService", "onAccessibilityEvent: not logged in")
                 showToastIfAllowed()
                 return@launch
             }
 
             // A new app was opened
             handleAppOpened(currentPackageName)
+            Log.i("AppActivityAccessibilityService", "appSessions after handleAppOpened: $appSessions")
         }
+        lastPackageName = currentPackageName
     }
 
     private suspend fun handleAppOpened(packageName: String) {
@@ -105,16 +110,16 @@ class AppActivityAccessibilityService : AccessibilityService() {
         // send to Supabase
         Supabase.predict(packageName, supabaseData.locationId, supabaseData.startTime, onSuccess = {
             shouldBlock = it
-            Log.i("AppActivityAccessibilityService", "handleAppOpened predict SUCCESS")
+            Log.i("AppActivityAccessibilityService", "handleAppOpened: predict SUCCESS")
         }, onFailure = {
             it.printStackTrace()
-            Log.e("AppActivityAccessibilityService", "handleAppOpened error: ${it.message}")
+            Log.e("AppActivityAccessibilityService", "handleAppOpened: error: ${it.message}")
             CoroutineScope(Dispatchers.Main).launch {
                 showNotification(this@AppActivityAccessibilityService, "Time-Jar error", "Error when requesting prediction: ${it.message}")
             }
         })
 
-        Log.i("AppActivityAccessibilityService", "handleAppOpened shouldBlock: $shouldBlock")
+        Log.i("AppActivityAccessibilityService", "handleAppOpened: shouldBlock: $shouldBlock")
 
         if (shouldBlock) {
             handleAppClosed(packageName)
@@ -126,8 +131,6 @@ class AppActivityAccessibilityService : AccessibilityService() {
 
             return
         }
-
-        lastPackageName = packageName
     }
 
     private fun handleAppClosed(packageName: String?) {
@@ -136,7 +139,7 @@ class AppActivityAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        Log.e("AppActivityAccessibilityService onInterrupt", "ERROR")
+        Log.e("AppActivityAccessibilityService", "onInterrupt: ERROR")
     }
 }
 

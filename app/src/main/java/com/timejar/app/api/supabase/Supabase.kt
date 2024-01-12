@@ -115,18 +115,22 @@ class Supabase : Application() {
         private var lastRefreshSession: Long = 0
 
         private suspend fun refreshSessionIfAllowed() {
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - lastRefreshSession > 30 * 60 * 1000) { // 30 minutes
-                lastRefreshSession = currentTime
+            try {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastRefreshSession > 30 * 60 * 1000) { // 30 minutes
+                    lastRefreshSession = currentTime
 
-                var sessionStatus = client.auth.sessionStatus.value
-                Log.d("isLoggedIn", "sessionStatus: $sessionStatus")
+                    var sessionStatus = client.auth.sessionStatus.value
+                    Log.d("isLoggedIn", "sessionStatus: $sessionStatus")
 
-                val result = client.auth.refreshCurrentSession()
-                Log.d("isLoggedIn", "refreshing sessionStatus result: ${result.toString()}")
+                    val result = client.auth.refreshCurrentSession()
+                    Log.d("isLoggedIn", "refreshing sessionStatus result: ${result.toString()}")
 
-                sessionStatus = client.auth.sessionStatus.value
-                Log.d("isLoggedIn after refresh", "sessionStatus: $sessionStatus")
+                    sessionStatus = client.auth.sessionStatus.value
+                    Log.d("isLoggedIn after refresh", "sessionStatus: $sessionStatus")
+                }
+            } catch (e: Exception) {
+                throw Exception("refreshSessionIfAllowed failed: ${e.message}")
             }
         }
 
@@ -186,7 +190,7 @@ class Supabase : Application() {
                     val user = client.auth.retrieveUserForCurrentSession()
 
                     val response = client.functions.invoke(
-                        function = "initial-app-activity",
+                        function = "predict",
                         body = buildJsonObject {
                             put("userId", user.id)
                             put("packageName", packageName)

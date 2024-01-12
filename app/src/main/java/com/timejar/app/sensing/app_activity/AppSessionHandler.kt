@@ -1,6 +1,7 @@
 package com.timejar.app.sensing.app_activity
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import com.timejar.app.api.supabase.Supabase
@@ -30,22 +31,23 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
 
     fun startSession(packageName: String): SupabaseData {
         lastCheckpoint = System.currentTimeMillis()
+
+        Log.i("AppSessionHandler", "startSession Tracking $packageName")
+
+        // Start tracking here (e.g., start activity recognition)
+        activityRecognitionManager = UserActivityRecognitionService(context)
+        activityRecognitionManager?.startTracking()
+
+        screenStateHandler = ScreenStateHandler(context, this@AppSessionHandler)
+        screenStateHandler?.registerScreenStateReceiver()
+
+        val locationId = GeofenceJobIntentService.getCurrentPlace()
+        Log.i("AppSessionHandler", "startSession Location: $locationId")
+
+        // Fill data
+        supabaseData = SupabaseData(packageName, lastCheckpoint, 0, locationId)
+
         job = CoroutineScope(Dispatchers.Main).launch {
-            Log.i("AppSessionHandler", "startSession Tracking $packageName")
-
-            // Start tracking here (e.g., start activity recognition)
-            activityRecognitionManager = UserActivityRecognitionService(context)
-            activityRecognitionManager?.startTracking()
-
-            screenStateHandler = ScreenStateHandler(context, this@AppSessionHandler)
-            screenStateHandler?.registerScreenStateReceiver()
-
-            val locationId = GeofenceJobIntentService.getCurrentPlace()
-            Log.i("AppSessionHandler", "startSession Location: $locationId")
-
-            // Fill data
-            supabaseData = SupabaseData(packageName, lastCheckpoint, 0, locationId)
-
             // Keep the coroutine alive until it's cancelled when the app session ends
             try {
                 delay(12 * 60 * 60 * 1000) // 12 hours
@@ -93,7 +95,7 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
             val actionId = activityRecognitionManager!!.stopTrackingAndReturnMostFrequentActivity()
             Log.i("AppSessionHandler", "handleSessionEnd: Most Frequent Activity during this period: $actionId")
 
-            val notificationHandler = NotificationHandler(context)
+            val notificationHandler = NotificationHandler(context, getAppNameFromPackageName(context, supabaseData.packageName))
             val (shouldBeBlocked, acceptanceId) = notificationHandler.handleUserDecisionNotification()
 
             Log.i("AppSessionHandler", "handleSessionEnd: shouldBeBlocked: $shouldBeBlocked, acceptance: $acceptanceId")
@@ -103,7 +105,8 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
             }
 
             // send to Supabase
-            Supabase.reportActivity(supabaseData.packageName,  acceptanceId, shouldBeBlocked, actionId, supabaseData.appUsageTime, supabaseData.locationId, supabaseData.startTime, onSuccess = {
+            // appUsageTime is in milliseconds, but server requests them in seconds!
+            Supabase.reportActivity(supabaseData.packageName,  acceptanceId, shouldBeBlocked, actionId, supabaseData.appUsageTime/1000, supabaseData.locationId, supabaseData.startTime, onSuccess = {
                 Log.i("AppSessionHandler", "handleSessionEnd reportActivity SUCCESS")
                 CoroutineScope(Dispatchers.Main).launch {
                     Toast.makeText(context, "Feedback successfully submitted", Toast.LENGTH_LONG).show()
@@ -118,3 +121,15 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
         }
     }
 }
+
+fun getAppNameFromPackageName(context: Context, packageName: String): String {
+    val packageManager = context.packageManager
+    return try {
+        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+        packageManager.getApplicationLabel(appInfo).toString()
+    } catch (e: PackageManager.NameNotFoundException) {
+        // If the app is not found, you might want to return the package name itself or a default string
+        "App not found"
+    }
+}
+
