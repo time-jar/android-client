@@ -143,7 +143,7 @@ class Supabase : Application() {
                 }
 
                 val id = client.auth.retrieveUserForCurrentSession().id
-                val sex = if (sexString.lowercase(Locale.ROOT) === "male") 1 else 2 // male or female
+                val sex = if (sexString.lowercase(Locale.ROOT) == "male") 1 else 2 // male or female
 
                 val userInfo = User(
                     id,
