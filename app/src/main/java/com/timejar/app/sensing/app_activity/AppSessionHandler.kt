@@ -64,7 +64,7 @@ class AppSessionHandler(private val context: Context) : ScreenStateListener {
     }
 
     override fun suspendSession() {
-        supabaseData.appUsageTime = System.currentTimeMillis() - lastCheckpoint
+        supabaseData.appUsageTime += System.currentTimeMillis() - lastCheckpoint
         lastCheckpoint = 0
 
         Log.d("AppSessionHandler", "Suspended session on ${supabaseData.packageName}")

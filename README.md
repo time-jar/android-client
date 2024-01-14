@@ -13,7 +13,7 @@ Builds are [here](app/build/outputs/apk/debug/).
 Run the following to prepare it for publishing:
 
 ```sh
-app/build/outputs/apk/debug/
+make prepare-to-publish
 ```
 
 Some images were gathered from [Flaticon](https://www.flaticon.com).
