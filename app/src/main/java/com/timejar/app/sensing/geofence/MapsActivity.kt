@@ -304,21 +304,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, OnCompleteListener
                     }
                     builder.show()
                 } else {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                        val builder =
-                            AlertDialog.Builder(this)
-                        builder.setTitle("Functionality limited")
-                        builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons in the background.  Please go to Settings -> Applications -> Permissions and grant background location access to this app.")
-                        builder.setPositiveButton(android.R.string.ok, null)
-                        builder.setOnDismissListener {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            val uri: Uri = Uri.fromParts("package", packageName, null)
-                            intent.data = uri
-                            // This will take the user to a page where they have to click twice to drill down to grant the permission
-                            startActivity(intent)
-                        }
-                        builder.show()
+                    val builder =
+                        AlertDialog.Builder(this)
+                    builder.setTitle("Functionality limited")
+                    builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons in the background.  Please go to Settings -> Applications -> Permissions and grant background location access to this app.")
+                    builder.setPositiveButton(android.R.string.ok, null)
+                    builder.setOnDismissListener {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        val uri: Uri = Uri.fromParts("package", packageName, null)
+                        intent.data = uri
+                        // This will take the user to a page where they have to click twice to drill down to grant the permission
+                        startActivity(intent)
                     }
+                    builder.show()
                 }
             } else {
                 whenMapReady()
