@@ -16,8 +16,6 @@ Run the following to prepare it for publishing:
 make prepare-to-publish
 ```
 
+Run using Android Studio.
+
 Some images were gathered from [Flaticon](https://www.flaticon.com).
-
-## Docs
-
-[DetectedActivity](https://developers.google.com/android/reference/com/google/android/gms/location/DetectedActivity)
